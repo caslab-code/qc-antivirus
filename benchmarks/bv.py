@@ -1,7 +1,8 @@
 # initialization
 import matplotlib.pyplot as plt
 import numpy as np
-import os,sys
+import os
+import argparse
 
 # importing Qiskit
 from qiskit import IBMQ, Aer
@@ -61,7 +62,9 @@ def bv(s, n):
     f.close()
     return tranpiled_bv
 
-if __name__ == '__main__':
-    bv(sys.argv[2], sys.argv[3])
     
-    
+parser = argparse.ArgumentParser()
+parser.add_argument('-s','--string', type=str, required=True, help='Hidden binary String')
+parser.add_argument('-w','--width', type=int, required=True, help='Width of binary string')
+args = parser.parse_args()
+bv(args.string, args.width)    

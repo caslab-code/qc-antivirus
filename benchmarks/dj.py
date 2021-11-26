@@ -1,6 +1,7 @@
 # initialization
 import numpy as np
-import os,sys
+import os
+import argparse
 
 # importing Qiskit
 import qiskit
@@ -83,7 +84,8 @@ def dj(case, n):
     f.close()
     return transpiled_dj
 
-if __name__ == '__main__':
-    dj(sys.argv[2], sys.argv[3])
-    
-    
+parser = argparse.ArgumentParser()
+parser.add_argument('-c','--case', type=str, required=True, help='Select one from two options: 1. "balanced" 2. "constant" ')
+parser.add_argument('-w','--width', type=int, required=True, help='Width of input string')
+args = parser.parse_args()
+dj(args.case, args.width)

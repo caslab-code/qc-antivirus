@@ -1,15 +1,15 @@
 SHELL := /bin/bash
 
-n = 4
-s = "1001"
+width = 4
+string = "1001"
 case = "balanced" # other option is balanced
 
 
 default: run
 
 run: 
-	python bv.py bv $(s) $(n)
-	python dj.py dj $(case) $(n)
+	python bv.py -s $(string) -w $(width)
+	python dj.py -c $(case) -w $(width)
 
 
 clean:
