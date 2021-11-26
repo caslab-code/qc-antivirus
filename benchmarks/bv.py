@@ -55,6 +55,7 @@ def bv(s, n):
     bv_circuit = bv_algorithm(s, n)
     aer_sim = Aer.get_backend('aer_simulator')
     tranpiled_bv = transpile(bv_circuit, aer_sim)
+    # FIXME antivirus should go here I think 
     f = open("transpiled_bv.json", "w")
     f.write(str(assemble(tranpiled_bv)))
     f.close()
