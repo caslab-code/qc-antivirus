@@ -10,7 +10,7 @@ default: run
 run: 
 	python bv.py -s $(string) -w $(width)
 	python dj.py -c $(case) -w $(width)
-
+	python grover_2qbit.py
 
 clean:
 	rm -rf *.json
