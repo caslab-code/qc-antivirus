@@ -11,6 +11,7 @@ from qiskit.providers.ibmq import least_busy
 from qiskit.visualization import plot_histogram
 
 
+
 def initialize_s(qc, qubits):
     """Apply a H-gate to 'qubits' in qc"""
     for q in qubits:
