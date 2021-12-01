@@ -3,6 +3,7 @@ import numpy as np
 import os
 import argparse
 
+
 # importing Qiskit
 import qiskit
 from qiskit import IBMQ, Aer
@@ -11,6 +12,16 @@ from qiskit import QuantumCircuit, assemble, transpile
 
 # import basic plot tools
 from qiskit.visualization import plot_histogram
+
+#importing from Search Pattern
+import sys
+sys.path.append('./qc-antivirus/antivirus')
+import search_pattern
+
+#sample pattern
+pt = QuantumCircuit(2)
+pt.cx(1, 0)
+pt.cx(1, 0)
 
 
 def dj_oracle(case, n):
@@ -79,10 +90,21 @@ def dj(case, n):
     dj_circuit = dj_algorithm(oracle,n)
     aer_sim = Aer.get_backend('aer_simulator')
     transpiled_dj = transpile(dj_circuit, aer_sim) 
-    f = open("transpiled_dj.json", "w")
-    f.write(str(assemble(transpiled_dj)))
-    f.close()
-    return transpiled_dj
+    # f = open("transpiled_dj.json", "w")
+    # f.write(str(assemble(transpiled_dj)))
+    # f.close()
+    total_pattern = 0
+    print("Search Pattern:") 
+    print(pt)
+    for i in range(0,n-1):
+        for j in range(i+1, n):
+            # print(i,j)
+            pattern = search_pattern.search_pattern_defined_bits(transpiled_dj, pt, [j,i])
+            print("No. of patterns detected between Qbit",i,"and Qbit",j, "are", pattern)
+            total_pattern = total_pattern + pattern
+    
+    print("Total Number of Pattern detected", total_pattern)
+    return 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-c','--case', type=str, required=True, help='Select one from two options: 1. "balanced" 2. "constant" ')
