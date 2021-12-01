@@ -79,7 +79,7 @@ def grover_3qbit():
             print("No. of patterns detected between Qbit",i,"and Qbit",j, "are", pattern)
             total_pattern = total_pattern + pattern
     
-    print("Total Pattern", total_pattern)
+    print("Total Patterns", total_pattern)
     # pattern1 = search_pattern.search_pattern_defined_bits(tranpiled_grover_circuit, pt, [1,0])
     # pattern2 = search_pattern.search_pattern_defined_bits(tranpiled_grover_circuit, pt, [2,1])
     # pattern3 = search_pattern.search_pattern_defined_bits(tranpiled_grover_circuit, pt, [2,0])

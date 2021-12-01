@@ -103,7 +103,7 @@ def dj(case, n):
             print("No. of patterns detected between Qbit",i,"and Qbit",j, "are", pattern)
             total_pattern = total_pattern + pattern
     
-    print("Total Number of Pattern detected", total_pattern)
+    print("Total Number of Patterns detected", total_pattern)
     return 
 
 parser = argparse.ArgumentParser()
