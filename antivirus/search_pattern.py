@@ -1,9 +1,10 @@
-from typing import List, Union, Optional
+from typing import Dict, List, Union, Optional
 from qiskit import QuantumCircuit, assemble
 from qiskit.qobj import Qobj
 from qiskit.qobj.qasm_qobj import QasmQobjInstruction
 
-
+# TODO:
+# NoneType checking for all functions
 
 def parse_qc(
     qc: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]]
@@ -63,11 +64,11 @@ def map_bits(
 
     ins_set = []
     for ins in ins_set_qc:
-        if hasattr(ins, 'qubits'):
+        if qubit_map and hasattr(ins, 'qubits'):
             ins.qubits = [qubit_map[i] for i in ins.qubits]
-        if hasattr(ins, 'register'):
+        if register_map and hasattr(ins, 'register'):
             ins.register = [register_map[i] for i in ins.register]
-        if hasattr(ins, 'memory'):
+        if memory_map and hasattr(ins, 'memory'):
             ins.memory = [memory_map[i] for i in ins.memory]
         ins_set.append(ins)
     
@@ -162,7 +163,9 @@ def _pattern_matching_bf(
 def search_pattern_defined_bits(
     qc: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]], 
     pt: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]], 
-    qubit_map: List[int],
+    qubit_map: Optional[List[int]] = None,
+    register_map: Optional[List[int]] = None,
+    memory_map: Optional[List[int]] = None,
     is_overlap: Optional[bool] = True
     ) -> int:
     """Count the appearances of a pattern in a given quantum circuit.
@@ -170,8 +173,12 @@ def search_pattern_defined_bits(
     Args:
         qc: The quantum circuit to be searched through.
         pt: The pattern to be searched.
-        qubit_map (list): The qubits indices mapping from the pattern to the quantum circuit.
-            bit_map[i] is the nex qubit index in the quantum circuit of the qubit i in the pattern
+        qubit_map : The qubits indices mapping from the pattern to the quantum circuit.
+            qubit_map[i] is the qubit index in the quantum circuit of the qubit i in the pattern
+        register_map : The register indices mapping from the pattern to the quantum circuit.
+            register_map[i] is the register index in the quantum circuit of the qubit i in the pattern
+        memory_map : The memory indices mapping from the pattern to the quantum circuit.
+            bit_map[i] is the memory index in the quantum circuit of the qubit i in the pattern
         is_overlap: Whether the patterns are overlapped. Ex, searching ``aa`` in ``aaa``. If ``True``, 
             it returns 2. Otherwise, it returns 1.
     
@@ -179,11 +186,18 @@ def search_pattern_defined_bits(
         The number of appearances of the pattern in the quantum circuit.
     """
 
-    ins_set_pt = map_bits(pt, qubit_map)
+    if not qubit_map:
+        qubit_map = list(range(pt.num_qubits))
+    # if not register_map:
+    #     register_map = list(range(pt.num_clbits))
+    # if not qubit_map:
+    #     qubit_map = list(range(pt.num_qubits))
+
+    ins_set_pt = map_bits(pt, qubit_map=qubit_map, register_map=register_map, memory_map=memory_map)
 
     # create the reduced instruction set of the quantum circuit
     # the reduced instruction set contains all instructions in qc that involve target qubits
-    ins_set_qc_reduced = reduce_qc(qc, qubit_map)
+    ins_set_qc_reduced = reduce_qc(qc, qubit_list=qubit_map, register_list=register_map, memory_list=memory_map)
     
     # use common pattern matching algorithms to find the count
     # this method is strict, which means only the same pattern is counted
@@ -196,8 +210,10 @@ def search_pattern_defined_bits(
 def pattern_histogram(
     qc: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]], 
     pt: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction], str], 
-    qubit_map: List[int]
-    ) -> List[List[int]]:
+    qubit_map: Optional[List[int]] = None,
+    register_map: Optional[List[int]] = None,
+    memory_map: Optional[List[int]] = None,
+    ) -> Dict[int, int]:
     """Return the histogram of the number of appearances of the pattern in the quantum circuit.
 
     Args:
@@ -205,10 +221,21 @@ def pattern_histogram(
         pt: The pattern to be searched. ``str`` type input only applies to one gate pattern.
         qubit_map (list): The qubits indices mapping from the pattern to the quantum circuit.
             bit_map[i] is the nex qubit index in the quantum circuit of the qubit i in the pattern
+        register_map : The register indices mapping from the pattern to the quantum circuit.
+            register_map[i] is the register index in the quantum circuit of the qubit i in the pattern
+        memory_map : The memory indices mapping from the pattern to the quantum circuit.
+            bit_map[i] is the memory index in the quantum circuit of the qubit i in the pattern
     
     Returns:
         The histogram of the number of appearances of the pattern in the quantum circuit.
     """
+
+    if not qubit_map and hasattr(pt, 'num_qubits'):
+        qubit_map = list(range(pt.num_qubits))
+    # if not register_map:
+    #     register_map = list(range(pt.num_clbits))
+    # if not qubit_map:
+    #     qubit_map = list(range(pt.num_qubits))
 
     if isinstance(pt, str):
         pt_circ = QuantumCircuit(2)
@@ -217,11 +244,11 @@ def pattern_histogram(
         except:
             getattr(pt_circ, pt)(0, 1)
         pt = pt_circ
-    ins_set_pt = map_bits(pt, qubit_map)
+    ins_set_pt = map_bits(pt, qubit_map=qubit_map, register_map=register_map, memory_map=memory_map)
 
     # create the reduced instruction set of the quantum circuit
     # the reduced instruction set contains all instructions in qc that involve target qubits
-    ins_set_qc_reduced = reduce_qc(qc, qubit_map)
+    ins_set_qc_reduced = reduce_qc(qc, qubit_list=qubit_map, register_list=register_map, memory_list=memory_map)
     ins_set_qc_reduced.append(None) # always break from the internal while loop and counts
                                     # Otherwise it may skip counting the last pattern
     
@@ -244,6 +271,7 @@ def pattern_histogram(
             count = 0
         i += 1
 
-    del hist[0]
+    if 0 in hist.keys():
+        del hist[0]
 
     return hist
