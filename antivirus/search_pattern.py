@@ -104,17 +104,17 @@ def reduce_qc(
     ins_set_qc_reduced = []
     for ins in ins_set_qc:
         flag = False
-        if hasattr(ins, 'qubits'):
+        if qubit_list and hasattr(ins, 'qubits'):
             for qubit in ins.qubits:
                 if qubit in qubit_list:
                     flag = True
                     break
-        if not flag and hasattr(ins, 'register'):
+        if register_list and not flag and hasattr(ins, 'register'):
             for register in ins.register:
                 if register in register_list:
                     flag = True
                     break
-        if not flag and hasattr(ins, 'memory'):
+        if memory_list and not flag and hasattr(ins, 'memory'):
             for memory in ins.memory:
                 if memory in memory_list:
                     flag = True
