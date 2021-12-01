@@ -115,10 +115,9 @@ def _pattern_matching_bf(
             j += 1
         if j == len(pt):
             count += 1
-            if is_overlap:
-                i += 1
-            else:
-                i += j
+            if not is_overlap:
+                i += j - 1
+        i += 1
     
     return count
 
@@ -155,4 +154,6 @@ def search_pattern_defined_bits(
     count = _pattern_matching_bf(ins_set_qc_reduced, ins_set_pt, is_overlap)
 
     return count
+
+
 
