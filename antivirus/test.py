@@ -1,5 +1,5 @@
 from qiskit import QuantumCircuit
-from search_pattern import search_pattern_defined_bits
+import search_pattern
 
 qc = QuantumCircuit(3)
 qc.h(0)
@@ -9,12 +9,18 @@ qc.h(1)
 qc.h(0)
 qc.cx(0, 1)
 qc.cx(0, 1)
+qc.cx(0, 1)
+qc.h(0)
+qc.cx(0, 1)
+qc.cx(0, 1)
+qc.cx(0, 1)
 
 pt = QuantumCircuit(3)
-pt.h(1)
-pt.cx(1, 0)
-pt.cx(1, 0)
+pt.cx(0, 1)
 
-bit_map = [1, 0]
 
-print(search_pattern_defined_bits(qc, pt, bit_map))
+qubit_map = [0, 1]
+
+print(search_pattern.search_pattern_defined_bits(qc, pt, qubit_map))
+print(search_pattern.pattern_histogram(qc, 'cx', qubit_map))
+# print(search_pattern.pattern_histogram(qc, pt, qubit_map)) # this can also be used
