@@ -36,11 +36,11 @@ def parse_qc(
 
 
 
-# TODO： (1) add classical bits and memory mappings
-#        (2) qc does not contain less bits, mapping should not be duplicate
 def map_bits(
     qc: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]], 
-    qubit_map: List[int]
+    qubit_map: Optional[List[int]] = None,
+    register_map: Optional[List[int]] = None,
+    memory_map: Optional[List[int]] = None
     ) -> List[QasmQobjInstruction]:
     """Return the instruction set after bit mapping.
 
@@ -48,7 +48,11 @@ def map_bits(
         qc : The quantum circuit to be searched through
         pt : The pattern to be searched
         qubit_map : The qubits indices mapping from the pattern to the quantum circuit.
-            bit_map[i] is the nex qubit index in the quantum circuit of the qubit i in the pattern
+            qubit_map[i] is the qubit index in the quantum circuit of the qubit i in the pattern
+        register_map : The register indices mapping from the pattern to the quantum circuit.
+            register_map[i] is the register index in the quantum circuit of the qubit i in the pattern
+        memory_map : The memory indices mapping from the pattern to the quantum circuit.
+            bit_map[i] is the memory index in the quantum circuit of the qubit i in the pattern
     
     Returns:
         A ``list`` that contains a series of ``QasmQobjInstruction``, which are all
@@ -59,7 +63,13 @@ def map_bits(
 
     ins_set = []
     for ins in ins_set_qc:
-        ins_set.append(QasmQobjInstruction(name = ins.name, qubits = [qubit_map[i] for i in ins.qubits]))
+        if hasattr(ins, 'qubits'):
+            ins.qubits = [qubit_map[i] for i in ins.qubits]
+        if hasattr(ins, 'register'):
+            ins.register = [register_map[i] for i in ins.register]
+        if hasattr(ins, 'memory'):
+            ins.memory = [memory_map[i] for i in ins.memory]
+        ins_set.append(ins)
     
     return ins_set
 
@@ -67,26 +77,49 @@ def map_bits(
 
 def reduce_qc(
     qc: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]], 
-    qubit_list: List[int],
+    qubit_list: Optional[List[int]] = None,
+    register_list: Optional[List[int]] = None,
+    memory_list: Optional[List[int]] = None
     ) -> List[QasmQobjInstruction]:
     """Return the reduced instruction set of the quantum circuit, i.e., all instructions that involve qubits in qubit_list.
 
     Args:
         qc: The quantum circuit to be searched through
-        qubit_list (list): The list of qubit indices to be considered.
+        qubit_list: The list of qubit indices to be considered.
+        register_list: The list of register indices to be considered.
+        memory_list: The list of memory indices to be considered.
     
     Returns:
         The reduced instruction set of the quantum circuit, i.e., all instructions that involve qubits in qubit_list.
     """
 
+    if qc.num_qubits < len(qubit_list):
+        raise IndexError("Quantum Circuit has less qubits than qubit mapping")
+    if len(set(qubit_list)) < len(qubit_list):
+        raise ValueError("There is duplicate in qubit mapping")
+
     ins_set_qc = parse_qc(qc)
 
     ins_set_qc_reduced = []
     for ins in ins_set_qc:
-        for qubit in ins.qubits:
-            if qubit in qubit_list:
-                ins_set_qc_reduced.append(ins)
-                break
+        flag = False
+        if hasattr(ins, 'qubits'):
+            for qubit in ins.qubits:
+                if qubit in qubit_list:
+                    flag = True
+                    break
+        if not flag and hasattr(ins, 'register'):
+            for register in ins.register:
+                if register in register_list:
+                    flag = True
+                    break
+        if not flag and hasattr(ins, 'memory'):
+            for memory in ins.memory:
+                if memory in memory_list:
+                    flag = True
+                    break
+        if flag:
+            ins_set_qc_reduced.append(ins)
     
     return ins_set_qc
 
