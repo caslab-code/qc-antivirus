@@ -13,7 +13,7 @@ from qiskit.visualization import plot_histogram
 
 #importing from Search Pattern
 import sys
-sys.path.append('./qc-antivirus/antivirus')
+sys.path.append('../antivirus')
 import search_pattern
 
 #pattern

@@ -14,7 +14,7 @@ from qiskit.visualization import plot_histogram
 
 #importing from Search Pattern
 import sys
-sys.path.append('./qc-antivirus/antivirus')
+sys.path.append('../antivirus')
 import search_pattern
 
 #sample pattern
@@ -76,7 +76,7 @@ def bv(s, n):
     print(pt)
     for i in range(0,n-1):
         for j in range(i+1, n):
-            pattern = search_pattern.search_pattern_defined_bits(tranpiled_bv, pt, [j,i])
+            pattern = search_pattern.search_pattern_defined_bits(tranpiled_bv, pt, [i,j])
             print("No. of patterns detected between Qbit",i,"and Qbit",j, "are", pattern)
             total_pattern = total_pattern + pattern
     
