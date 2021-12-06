@@ -109,12 +109,12 @@ def reduce_qc(
                 if qubit in qubit_list:
                     flag = True
                     break
-        if register_list and not flag and hasattr(ins, 'register'):
+        if not flag and register_list and hasattr(ins, 'register'):
             for register in ins.register:
                 if register in register_list:
                     flag = True
                     break
-        if memory_list and not flag and hasattr(ins, 'memory'):
+        if not flag and memory_list and hasattr(ins, 'memory'):
             for memory in ins.memory:
                 if memory in memory_list:
                     flag = True
@@ -122,7 +122,7 @@ def reduce_qc(
         if flag:
             ins_set_qc_reduced.append(ins)
     
-    return ins_set_qc
+    return ins_set_qc_reduced
 
 
 

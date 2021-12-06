@@ -51,4 +51,5 @@ Thumbs.db
 
 # files defined by Chuanqi
 antivirus/test.ipynb
+antivirus/test.py
 antivirus/randomcircuit.py
