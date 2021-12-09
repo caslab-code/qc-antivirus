@@ -2,7 +2,7 @@ from itertools import permutations
 from typing import Dict, List, Tuple, Union, Optional
 from qiskit import QuantumCircuit, assemble
 from qiskit.qobj import Qobj
-from qiskit.qobj.qasm_qobj import QasmQobjInstruction
+from qiskit.qobj.qasm_qobj import QasmQobj, QasmQobjInstruction
 
 # TODO:
 # NoneType checking for all functions
@@ -10,32 +10,50 @@ from qiskit.qobj.qasm_qobj import QasmQobjInstruction
 
 
 
-def _count_num_qubits(
-    qc: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]]
+def _count_num_bits(
+    qc: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]],
+    bit_type: str = 'qubit'
     ) -> int:
     """Return the number of qubits of the given input.
 
     Args:
-        qc: The input to count qubits
+        qc: The input to count qubits. 
+        bit_type: The type of the bits: one of ```qubit```, ```clbit```
 
     Returns:
         The number of qubits in the given input.
     """
+    if bit_type == 'qubit':
+        if isinstance(qc, QuantumCircuit):
+            num_bits = qc.num_qubits
+        elif isinstance(qc, (QasmQobj, Qobj)):
+            num_bits = qc.config.n_qubits
+        elif isinstance(qc, List) and isinstance(qc[0], QasmQobjInstruction):
+            num_bits = 0
+            qubit_set = []
+            for ins in qc:
+                if hasattr(ins, 'qubits'):
+                    for qubit in ins.qubits:
+                        if qubit not in qubit_set:
+                            num_bits += 1
+                            qubit_set.append(qubit)
+    elif bit_type == 'clbit':
+        if isinstance(qc, QuantumCircuit):
+            num_bits = qc.num_clbits
+        elif isinstance(qc, (QasmQobj, Qobj)):
+            num_bits = qc.config.memory_slots
+        elif isinstance(qc, List) and isinstance(qc[0], QasmQobjInstruction):
+            num_bits = 0
+            clbit_set = []
+            for ins in qc:
+                if hasattr(ins, 'memory'):
+                    for clbit in ins.memory:
+                        if clbit not in clbit_set:
+                            num_bits += 1
+                            clbit_set.append(clbit)
 
-    if isinstance(qc, QuantumCircuit):
-        num_qubits = qc.num_qubits
-    elif isinstance(qc, List) and isinstance(qc[0], QasmQobjInstruction):
-        num_qubits = 0
-        qubit_set = []
-        for ins in qc:
-            for qubit in ins.qubits:
-                if qubit not in qubit_set:
-                    num_qubits += 1
-                    qubit_set.append(qubit)
-    elif isinstance(qc, Qobj):
-        pass
+    return num_bits
 
-    return num_qubits
 
 
 def parse_qc(
@@ -260,7 +278,7 @@ def search_pattern_permutated(
     num_qubits= qc.num_qubits
 
     count = []
-    for qubit_map in permutations(range(num_qubits), _count_num_qubits(pt)):
+    for qubit_map in permutations(range(num_qubits), _count_num_bits(pt)):
         count_defined_qubits = search_pattern_defined_bits(qc, pt, qubit_map=qubit_map, is_overlap=is_overlap)
         if count_defined_qubits > 0:
             count.append((qubit_map, count_defined_qubits))
@@ -289,7 +307,7 @@ def count_pattern(
     num_qubits= qc.num_qubits
 
     count = 0
-    for qubit_map in permutations(range(num_qubits), _count_num_qubits(pt)):
+    for qubit_map in permutations(range(num_qubits), _count_num_bits(pt, bit_type='qubit')):
         count += search_pattern_defined_bits(qc, pt, qubit_map=qubit_map, is_overlap=is_overlap)
 
     return count
