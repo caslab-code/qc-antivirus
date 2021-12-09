@@ -1,10 +1,42 @@
-from typing import Dict, List, Union, Optional
+from itertools import permutations
+from typing import Dict, List, Tuple, Union, Optional
 from qiskit import QuantumCircuit, assemble
 from qiskit.qobj import Qobj
 from qiskit.qobj.qasm_qobj import QasmQobjInstruction
 
 # TODO:
 # NoneType checking for all functions
+# Qobj in _count_num_qubits() and parse_qc()
+
+
+
+def _count_num_qubits(
+    qc: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]]
+    ) -> int:
+    """Return the number of qubits of the given input.
+
+    Args:
+        qc: The input to count qubits
+
+    Returns:
+        The number of qubits in the given input.
+    """
+
+    if isinstance(qc, QuantumCircuit):
+        num_qubits = qc.num_qubits
+    elif isinstance(qc, List) and isinstance(qc[0], QasmQobjInstruction):
+        num_qubits = 0
+        qubit_set = []
+        for ins in qc:
+            for qubit in ins.qubits:
+                if qubit not in qubit_set:
+                    num_qubits += 1
+                    qubit_set.append(qubit)
+    elif isinstance(qc, Qobj):
+        pass
+
+    return num_qubits
+
 
 def parse_qc(
     qc: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]]
@@ -93,7 +125,7 @@ def reduce_qc(
     Returns:
         The reduced instruction set of the quantum circuit, i.e., all instructions that involve qubits in qubit_list.
     """
-
+    
     if qc.num_qubits < len(qubit_list):
         raise IndexError("Quantum Circuit has less qubits than qubit mapping")
     if len(set(qubit_list)) < len(qubit_list):
@@ -202,6 +234,63 @@ def search_pattern_defined_bits(
     # use common pattern matching algorithms to find the count
     # this method is strict, which means only the same pattern is counted
     count = _pattern_matching_bf(ins_set_qc_reduced, ins_set_pt, is_overlap)
+
+    return count
+
+
+
+def search_pattern_permutated(
+    qc: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]], 
+    pt: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]], 
+    is_overlap: Optional[bool] = True
+    ) -> List[Tuple[int]]:
+    """Count the appearances of a pattern in a given quantum circuit.
+
+    Args:
+        qc: The quantum circuit to be searched through.
+        pt: The pattern to be searched.
+        is_overlap: Whether the patterns are overlapped. Ex, searching ``aa`` in ``aaa``. If ``True``, 
+            it returns 2. Otherwise, it returns 1.
+    
+    Returns:
+        A list of tuples where the first item of the tuple is the qubit map and the second item of
+            the tuple is the number of appearances of the pattern in the quantum circuit for this qubit map.
+    """
+
+    num_qubits= qc.num_qubits
+
+    count = []
+    for qubit_map in permutations(range(num_qubits), _count_num_qubits(pt)):
+        count_defined_qubits = search_pattern_defined_bits(qc, pt, qubit_map=qubit_map, is_overlap=is_overlap)
+        if count_defined_qubits > 0:
+            count.append((qubit_map, count_defined_qubits))
+
+    return count
+
+
+
+def count_pattern(
+    qc: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]], 
+    pt: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]], 
+    is_overlap: Optional[bool] = True
+    ) -> List[Tuple[int]]:
+    """Count the appearances of a pattern in a given quantum circuit.
+
+    Args:
+        qc: The quantum circuit to be searched through.
+        pt: The pattern to be searched.
+        is_overlap: Whether the patterns are overlapped. Ex, searching ``aa`` in ``aaa``. If ``True``, 
+            it returns 2. Otherwise, it returns 1.
+    
+    Returns:
+        The number of appearances of a pattern in a given quantum circuit.
+    """
+
+    num_qubits= qc.num_qubits
+
+    count = 0
+    for qubit_map in permutations(range(num_qubits), _count_num_qubits(pt)):
+        count += search_pattern_defined_bits(qc, pt, qubit_map=qubit_map, is_overlap=is_overlap)
 
     return count
 
