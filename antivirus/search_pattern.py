@@ -344,11 +344,6 @@ def pattern_histogram(
         The histogram of the number of appearances of the pattern in the quantum circuit.
     """
 
-    if not qubit_map:
-        qubit_map = list(range(_count_num_bits(pt, bit_type='qubit')))
-    if not memory_map:
-        memory_map = list(range(_count_num_bits(pt, bit_type='clbit')))
-
     if isinstance(pt, str):
         pt_circ = QuantumCircuit(2)
         try:
@@ -356,6 +351,12 @@ def pattern_histogram(
         except:
             getattr(pt_circ, pt)(0, 1)
         pt = pt_circ
+
+    if not qubit_map:
+        qubit_map = list(range(_count_num_bits(pt, bit_type='qubit')))
+    if not memory_map:
+        memory_map = list(range(_count_num_bits(pt, bit_type='clbit')))
+
     ins_set_pt = map_bits(pt, qubit_map=qubit_map, register_map=register_map, memory_map=memory_map)
 
     # create the reduced instruction set of the quantum circuit

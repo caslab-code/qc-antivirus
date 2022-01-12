@@ -23,9 +23,9 @@ pt.cx(0, 1)
 
 qubit_map = [0, 1]
 
-print(search_pattern.search_pattern_defined_bits(qc, pt, qubit_map))
+print(search_pattern.search_pattern_defined_bits(qc, pt, qubit_map=qubit_map))
 
-cx_hist = search_pattern.pattern_histogram(qc, 'cx', qubit_map)
+cx_hist = search_pattern.pattern_histogram(qc, 'cx', qubit_map=qubit_map)
 print(cx_hist)
 
 plt.bar(cx_hist.keys(), cx_hist.values())
