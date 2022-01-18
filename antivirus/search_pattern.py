@@ -1,33 +1,82 @@
-from typing import Dict, List, Union, Optional
+from itertools import permutations
+from typing import Dict, List, Tuple, Union, Optional
 from qiskit import QuantumCircuit, assemble
 from qiskit.qobj import Qobj
-from qiskit.qobj.qasm_qobj import QasmQobjInstruction
+from qiskit.qobj.qasm_qobj import QasmQobj, QasmQobjInstruction
 
 # TODO:
-# NoneType checking for all functions
+# search_pattern_defined_bits() with string pt for one gate
+
+
+
+def _count_num_bits(
+    qc: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]],
+    bit_type: str = 'qubit'
+    ) -> int:
+    """Return the number of qubits of the given input.
+
+    Args:
+        qc: The input to count qubits. 
+        bit_type: The type of the bits: one of ```qubit```, ```clbit```.
+
+    Returns:
+        The number of qubits in the given input.
+    """
+    if bit_type == 'qubit':
+        if isinstance(qc, QuantumCircuit):
+            num_bits = qc.num_qubits
+        elif isinstance(qc, (QasmQobj, Qobj)):
+            num_bits = qc.config.n_qubits
+        elif isinstance(qc, List) and isinstance(qc[0], QasmQobjInstruction):
+            num_bits = 0
+            qubit_set = []
+            for ins in qc:
+                if hasattr(ins, 'qubits'):
+                    for qubit in ins.qubits:
+                        if qubit not in qubit_set:
+                            num_bits += 1
+                            qubit_set.append(qubit)
+    elif bit_type == 'clbit':
+        if isinstance(qc, QuantumCircuit):
+            num_bits = qc.num_clbits
+        elif isinstance(qc, (QasmQobj, Qobj)):
+            num_bits = qc.config.memory_slots
+        elif isinstance(qc, List) and isinstance(qc[0], QasmQobjInstruction):
+            num_bits = 0
+            clbit_set = []
+            for ins in qc:
+                if hasattr(ins, 'memory'):
+                    for clbit in ins.memory:
+                        if clbit not in clbit_set:
+                            num_bits += 1
+                            clbit_set.append(clbit)
+
+    return num_bits
+
+
 
 def parse_qc(
-    qc: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]]
+    qc: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]]
     ) -> List[QasmQobjInstruction]:
     """Return the instruction set of the given quantum circuit.
 
     Args:
-        qc: The quantum circuit to be parsed
+        qc: The quantum circuit to be parsed.
 
     Returns:
         A ``list`` that contains a series of ``QasmQobjInstruction``, which are all
         instructions in the quantum circuits.
 
     Raises:
-        QiskitError: if the input cannot be interpreted as either circuits or schedules
+        QiskitError: if the input cannot be interpreted as either circuits or schedules.
     """
 
     if isinstance(qc, QuantumCircuit):
         qc = assemble(qc)
+    elif isinstance(qc, (QasmQobj, Qobj)):
+        pass
     elif isinstance(qc, List) and isinstance(qc[0], QasmQobjInstruction):
         return qc
-    elif isinstance(qc, Qobj):
-        pass
     else:
         raise TypeError("qc should be either QuantumCircuit or Qobj")
 
@@ -38,7 +87,7 @@ def parse_qc(
 
 
 def map_bits(
-    qc: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]], 
+    qc: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]], 
     qubit_map: Optional[List[int]] = None,
     register_map: Optional[List[int]] = None,
     memory_map: Optional[List[int]] = None
@@ -46,14 +95,14 @@ def map_bits(
     """Return the instruction set after bit mapping.
 
     Args:
-        qc : The quantum circuit to be searched through
-        pt : The pattern to be searched
+        qc : The quantum circuit to be searched through.
+        pt : The pattern to be searched.
         qubit_map : The qubits indices mapping from the pattern to the quantum circuit.
-            qubit_map[i] is the qubit index in the quantum circuit of the qubit i in the pattern
+            qubit_map[i] is the qubit index in the quantum circuit of the qubit i in the pattern.
         register_map : The register indices mapping from the pattern to the quantum circuit.
-            register_map[i] is the register index in the quantum circuit of the qubit i in the pattern
+            register_map[i] is the register index in the quantum circuit of the qubit i in the pattern.
         memory_map : The memory indices mapping from the pattern to the quantum circuit.
-            bit_map[i] is the memory index in the quantum circuit of the qubit i in the pattern
+            bit_map[i] is the memory index in the quantum circuit of the qubit i in the pattern.
     
     Returns:
         A ``list`` that contains a series of ``QasmQobjInstruction``, which are all
@@ -77,7 +126,7 @@ def map_bits(
 
 
 def reduce_qc(
-    qc: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]], 
+    qc: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]], 
     qubit_list: Optional[List[int]] = None,
     register_list: Optional[List[int]] = None,
     memory_list: Optional[List[int]] = None
@@ -85,7 +134,7 @@ def reduce_qc(
     """Return the reduced instruction set of the quantum circuit, i.e., all instructions that involve qubits in qubit_list.
 
     Args:
-        qc: The quantum circuit to be searched through
+        qc: The quantum circuit to be searched through.
         qubit_list: The list of qubit indices to be considered.
         register_list: The list of register indices to be considered.
         memory_list: The list of memory indices to be considered.
@@ -93,11 +142,16 @@ def reduce_qc(
     Returns:
         The reduced instruction set of the quantum circuit, i.e., all instructions that involve qubits in qubit_list.
     """
-
-    if qc.num_qubits < len(qubit_list):
+    
+    if _count_num_bits(qc, bit_type='qubit') < len(qubit_list):
         raise IndexError("Quantum Circuit has less qubits than qubit mapping")
     if len(set(qubit_list)) < len(qubit_list):
         raise ValueError("There is duplicate in qubit mapping")
+    
+    if _count_num_bits(qc, bit_type='clbit') < len(memory_list):
+        raise IndexError("Quantum Circuit has less memory slots than memory mapping")
+    if len(set(memory_list)) < len(memory_list):
+        raise ValueError("There is duplicate in memory mapping")
 
     ins_set_qc = parse_qc(qc)
 
@@ -134,8 +188,8 @@ def _pattern_matching_bf(
     """Count the appearances of a pattern in a string using the brute force method.
 
     Args:
-        strin: The string to be searched through
-        pt: The pattern to be searched
+        strin: The string to be searched through.
+        pt: The pattern to be searched.
         is_overlap: Whether the patterns are overlapped. Ex, searching ``aa`` in ``aaa``. If ``True``, 
             it returns 2. Otherwise, it returns 1.
 
@@ -161,8 +215,8 @@ def _pattern_matching_bf(
 
 
 def search_pattern_defined_bits(
-    qc: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]], 
-    pt: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]], 
+    qc: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]], 
+    pt: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]], 
     qubit_map: Optional[List[int]] = None,
     register_map: Optional[List[int]] = None,
     memory_map: Optional[List[int]] = None,
@@ -187,11 +241,9 @@ def search_pattern_defined_bits(
     """
 
     if not qubit_map:
-        qubit_map = list(range(pt.num_qubits))
-    # if not register_map:
-    #     register_map = list(range(pt.num_clbits))
-    # if not qubit_map:
-    #     qubit_map = list(range(pt.num_qubits))
+        qubit_map = list(range(_count_num_bits(pt, bit_type='qubit')))
+    if not memory_map:
+        memory_map = list(range(_count_num_bits(pt, bit_type='clbit')))
 
     ins_set_pt = map_bits(pt, qubit_map=qubit_map, register_map=register_map, memory_map=memory_map)
 
@@ -207,8 +259,70 @@ def search_pattern_defined_bits(
 
 
 
+def search_pattern_permutated(
+    qc: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]], 
+    pt: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]], 
+    is_overlap: Optional[bool] = True
+    ) -> List[Tuple[int]]:
+    """Count the appearances of a pattern in a given quantum circuit.
+
+    Args:
+        qc: The quantum circuit to be searched through.
+        pt: The pattern to be searched.
+        is_overlap: Whether the patterns are overlapped. Ex, searching ``aa`` in ``aaa``. If ``True``, 
+            it returns 2. Otherwise, it returns 1.
+    
+    Returns:
+        A list of tuples where the first item of the tuple is the qubit map, the second item of the tuple
+            is the memory map, and the second item of the tuple is the number of appearances of the pattern
+            in the quantum circuit for this qubit map.
+    """
+
+    num_qubits = _count_num_bits(qc, bit_type='qubit')
+    num_memories = _count_num_bits(qc, bit_type='clbit')
+
+    count = []
+    for qubit_map in permutations(range(num_qubits), _count_num_bits(pt, bit_type='qubit')):
+        for memory_map in permutations(range(num_memories), _count_num_bits(pt, bit_type='clbit')):
+            count_defined_bits = search_pattern_defined_bits(qc, pt, qubit_map=qubit_map, memory_map=memory_map, is_overlap=is_overlap)
+            if count_defined_bits > 0:
+                count.append((qubit_map, memory_map, count_defined_bits))
+
+    return count
+
+
+
+def count_pattern(
+    qc: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]], 
+    pt: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]], 
+    is_overlap: Optional[bool] = True
+    ) -> List[Tuple[int]]:
+    """Count the appearances of a pattern in a given quantum circuit.
+
+    Args:
+        qc: The quantum circuit to be searched through.
+        pt: The pattern to be searched.
+        is_overlap: Whether the patterns are overlapped. Ex, searching ``aa`` in ``aaa``. If ``True``, 
+            it returns 2. Otherwise, it returns 1.
+    
+    Returns:
+        The number of appearances of a pattern in a given quantum circuit.
+    """
+
+    num_qubits = _count_num_bits(qc, bit_type='qubit')
+    num_memories = _count_num_bits(qc, bit_type='clbit')
+
+    count = 0
+    for qubit_map in permutations(range(num_qubits), _count_num_bits(pt, bit_type='qubit')):
+        for memory_map in permutations(range(num_memories), _count_num_bits(pt, bit_type='clbit')):
+            count += search_pattern_defined_bits(qc, pt, qubit_map=qubit_map, memory_map=memory_map, is_overlap=is_overlap)
+
+    return count
+
+
+
 def pattern_histogram(
-    qc: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction]], 
+    qc: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]], 
     pt: Union[QuantumCircuit, Qobj, List[QasmQobjInstruction], str], 
     qubit_map: Optional[List[int]] = None,
     register_map: Optional[List[int]] = None,
@@ -230,13 +344,6 @@ def pattern_histogram(
         The histogram of the number of appearances of the pattern in the quantum circuit.
     """
 
-    if not qubit_map and hasattr(pt, 'num_qubits'):
-        qubit_map = list(range(pt.num_qubits))
-    # if not register_map:
-    #     register_map = list(range(pt.num_clbits))
-    # if not qubit_map:
-    #     qubit_map = list(range(pt.num_qubits))
-
     if isinstance(pt, str):
         pt_circ = QuantumCircuit(2)
         try:
@@ -244,6 +351,12 @@ def pattern_histogram(
         except:
             getattr(pt_circ, pt)(0, 1)
         pt = pt_circ
+
+    if not qubit_map:
+        qubit_map = list(range(_count_num_bits(pt, bit_type='qubit')))
+    if not memory_map:
+        memory_map = list(range(_count_num_bits(pt, bit_type='clbit')))
+
     ins_set_pt = map_bits(pt, qubit_map=qubit_map, register_map=register_map, memory_map=memory_map)
 
     # create the reduced instruction set of the quantum circuit
