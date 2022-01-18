@@ -22,7 +22,10 @@ pt.cx(0, 1)
 
 
 qubit_map = [0, 1]
-
+print("Patter Circuit")
+print(pt)
+print("Input Circuit")
+print(qc)
 print(search_pattern.search_pattern_defined_bits(qc, pt, qubit_map))
 
 cx_hist = search_pattern.pattern_histogram(qc, 'cx', qubit_map)
