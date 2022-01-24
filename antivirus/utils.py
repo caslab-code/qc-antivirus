@@ -4,24 +4,35 @@ from qiskit.qobj import Qobj
 from qiskit.qobj.qasm_qobj import QasmQobj, QasmQobjInstruction
 from circuit_to_dagdependency_antivirus import circuit_to_dagdependency_antivirus
 from networkx import MultiDiGraph
+from retworkx import PyDAG
 
 
 
-def circuit_to_networkx(
-    qc: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]]
+def circuit_to_network(
+    qc: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]],
+    network_type : str = "networkx"
     ) -> MultiDiGraph:
     """Convert a quantum circuit to ``networkx.MultiDiGraph``
 
     Args:
-        qc: The quantum circuit to be converted
+        qc: The quantum circuit to be converted.
+        network_type: The package for the graph representation. If set to ``networkx``,
+            ``networkx.algorithms.isomorphism.DiGraphMatcher`` is used; if set to ``retworkx``,
+            ``retworkx.vf2_mapping`` is used.
     
     Yiled:
         The matching of a pattern in a quantum circuit.
     """
-
-    qc_dag = circuit_to_dagdependency_antivirus(qc)
-    qc_net = qc_dag.to_networkx()
-    return qc_net
+    if network_type == "networkx":
+        qc_dag = circuit_to_dagdependency_antivirus(qc)
+        qc_net = qc_dag.to_networkx()
+        return qc_net
+    if network_type == "retworkx":
+        qc_dag = circuit_to_dagdependency_antivirus(qc)
+        qc_net = qc_dag.to_retworkx()
+        return qc_net
+    else:
+        raise Exception("Please specify the network type!")
 
 
 
