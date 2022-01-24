@@ -1,15 +1,15 @@
-from dagdependency_antivirus import DAGDependency_antivirus
+from dagnc import DAGNC
 
-def circuit_to_dagdependency_antivirus(circuit):
-    """Build a ``DAGDependency`` object from a ``QuantumCircuit``.
+def circuit_to_dagnc(circuit):
+    """Build a ``DAGNC`` object from a ``QuantumCircuit``.
 
     Args:
         circuit (QuantumCircuit): the input circuits.
 
     Return:
-        DAGDependency: the DAG representing the input circuit as a dag dependency.
+        DAGNC: the ``DAGNC`` representing the input circuit as a dag with non-commutativity.
     """
-    dagdependency = DAGDependency_antivirus()
+    dagdependency = DAGNC()
     dagdependency.name = circuit.name
     dagdependency.metadata = circuit.metadata
 

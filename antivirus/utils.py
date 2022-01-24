@@ -2,7 +2,7 @@ from typing import Dict, List, Tuple, Union, Optional, Generator
 from qiskit import QuantumCircuit
 from qiskit.qobj import Qobj
 from qiskit.qobj.qasm_qobj import QasmQobj, QasmQobjInstruction
-from circuit_to_dagdependency_antivirus import circuit_to_dagdependency_antivirus
+from circuit_to_dagnc import circuit_to_dagnc
 from networkx import MultiDiGraph
 from retworkx import PyDAG
 
@@ -24,11 +24,11 @@ def circuit_to_network(
         The matching of a pattern in a quantum circuit.
     """
     if network_type == "networkx":
-        qc_dag = circuit_to_dagdependency_antivirus(qc)
+        qc_dag = circuit_to_dagnc(qc)
         qc_net = qc_dag.to_networkx()
         return qc_net
     if network_type == "retworkx":
-        qc_dag = circuit_to_dagdependency_antivirus(qc)
+        qc_dag = circuit_to_dagnc(qc)
         qc_net = qc_dag.to_retworkx()
         return qc_net
     else:

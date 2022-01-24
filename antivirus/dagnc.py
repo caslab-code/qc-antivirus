@@ -10,7 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-"""DAGDependency class for representing non-commutativity in a circuit.
+"""DAGNC class for representing non-commutativity in a circuit.
 """
 
 import math
@@ -27,9 +27,15 @@ from qiskit.quantum_info.operators import Operator
 from qiskit.exceptions import MissingOptionalLibraryError
 
 
-class DAGDependency_antivirus:
+class DAGNC:
     """Object to represent a quantum circuit as a directed acyclic graph
-    via operation dependencies (i.e. lack of commutation).
+    (DAG). Compared with ``qiskit.dagcircuit.dagcircuit.DAGCircuit``, this
+    class do not have inputs and outputs node, which means there is only 
+    operation nodes; compared with ``qiskit.dagcircuit.dagdependency.DAGDependency``,
+    this class only considers the commutativity between two gates whose
+    qargs do not cross with each other, which means there are edges between
+    all nodes in order, except the gates operate on different qubits.
+    We define it to be directed acyclic graph with non-commutativity (DAGNC).
 
     The nodes in the graph are operations represented by quantum gates.
     The edges correspond to non-commutation between two operations
@@ -510,7 +516,7 @@ class DAGDependency_antivirus:
             DAGDependency: a copy of a DAGDependency object.
         """
 
-        dag = DAGDependency_antivirus()
+        dag = DAGNC()
         dag.name = self.name
         dag.cregs = self.cregs.copy()
         dag.qregs = self.qregs.copy()
@@ -607,21 +613,21 @@ def _does_commute(node1, node2):
     
     return not set(qarg1).intersection(set(qarg2)) and not set(carg1).intersection(set(carg2))
 
-    # Create matrices to check commutation relation if no other criteria are matched
-    qarg = list(set(node1.qargs + node2.qargs))
-    qbit_num = len(qarg)
+    # # Create matrices to check commutation relation if no other criteria are matched
+    # qarg = list(set(node1.qargs + node2.qargs))
+    # qbit_num = len(qarg)
 
-    qarg1 = [qarg.index(q) for q in node1.qargs]
-    qarg2 = [qarg.index(q) for q in node2.qargs]
+    # qarg1 = [qarg.index(q) for q in node1.qargs]
+    # qarg2 = [qarg.index(q) for q in node2.qargs]
 
-    dim = 2 ** qbit_num
-    id_op = np.reshape(np.eye(dim), (2, 2) * qbit_num)
+    # dim = 2 ** qbit_num
+    # id_op = np.reshape(np.eye(dim), (2, 2) * qbit_num)
 
-    op1 = np.reshape(node1.op.to_matrix(), (2, 2) * len(qarg1))
-    op2 = np.reshape(node2.op.to_matrix(), (2, 2) * len(qarg2))
+    # op1 = np.reshape(node1.op.to_matrix(), (2, 2) * len(qarg1))
+    # op2 = np.reshape(node2.op.to_matrix(), (2, 2) * len(qarg2))
 
-    op = Operator._einsum_matmul(id_op, op1, qarg1)
-    op12 = Operator._einsum_matmul(op, op2, qarg2, right_mul=False)
-    op21 = Operator._einsum_matmul(op, op2, qarg2, shift=qbit_num, right_mul=True)
+    # op = Operator._einsum_matmul(id_op, op1, qarg1)
+    # op12 = Operator._einsum_matmul(op, op2, qarg2, right_mul=False)
+    # op21 = Operator._einsum_matmul(op, op2, qarg2, shift=qbit_num, right_mul=True)
 
-    return np.allclose(op12, op21)
+    # return np.allclose(op12, op21)

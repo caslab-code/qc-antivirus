@@ -1,5 +1,5 @@
 from qiskit import QuantumCircuit
-from antivirus import pattern_counter, match
+from isomorphism import pattern_counter, match
 
 
 # ------------------------------------------------------------------------------------

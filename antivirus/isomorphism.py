@@ -7,7 +7,7 @@ from qiskit.qobj.qasm_qobj import QasmQobj, QasmQobjInstruction
 from networkx.algorithms.isomorphism import DiGraphMatcher
 from retworkx import vf2_mapping
 
-from circuit_to_dagdependency_antivirus import circuit_to_dagdependency_antivirus
+from circuit_to_dagnc import circuit_to_dagnc
 from utils import circuit_to_network, check_matching
 
 
