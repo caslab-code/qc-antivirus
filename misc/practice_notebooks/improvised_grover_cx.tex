@@ -1,0 +1,14 @@
+\documentclass[border=2px]{standalone}
+        
+\usepackage[braket, qm]{qcircuit}
+\usepackage{graphicx}
+
+\begin{document} 
+\scalebox{1.0}{
+\Qcircuit @C=1.0em @R=0.2em @!R { \\
+	 	\nghost{ {q}_{0} :  } & \lstick{ {q}_{0} :  } & \gate{\mathrm{H}} & \ctrl{1} & \gate{\mathrm{H}} & \gate{\mathrm{Z}} & \ctrl{1} & \gate{\mathrm{H}} & \qw & \qw\\ 
+	 	\nghost{ {q}_{1} :  } & \lstick{ {q}_{1} :  } & \gate{\mathrm{H}} & \control\qw & \gate{\mathrm{H}} & \gate{\mathrm{Z}} & \control\qw & \gate{\mathrm{H}} & \qw & \qw\\ 
+	 	\nghost{ {q}_{2} :  } & \lstick{ {q}_{2} :  } & \ctrl{1} & \gate{\mathrm{Delay}\,(\mathrm{1[dt]})} & \ctrl{1} & \gate{\mathrm{Delay}\,(\mathrm{1[dt]})} & \ctrl{1} & \gate{\mathrm{Delay}\,(\mathrm{1[dt]})} & \qw & \qw\\ 
+	 	\nghost{ {q}_{3} :  } & \lstick{ {q}_{3} :  } & \targ & \qw & \targ & \qw & \targ & \qw & \qw & \qw\\ 
+\\ }}
+\end{document}
