@@ -1,0 +1,74 @@
+ibmq_lima
+0, 0.923
+10, 0.903
+20, 0.769
+30, 0.936
+40, 0.918
+50, 0.922
+60, 0.773
+70, 0.907
+80, 0.904
+90, 0.754
+100, 0.729
+110, 0.754
+120, 0.927
+130, 0.704
+140, 0.738
+150, 0.711
+160, 0.767
+170, 0.758
+180, 0.917
+190, 0.761
+ing on device:  ibmq_lima
+Job Status: job has successfully run
+30 0.936
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+40 0.918
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+50 0.922
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+60 0.773
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+70 0.907
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+80 0.904
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+90 0.754
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+100 0.729
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+110 0.754
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+120 0.927
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+130 0.704
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+140 0.738
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+150 0.711
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+160 0.767
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+170 0.758
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+180 0.917
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+190 0.761
+Running on device:  ibmq_lima
+Job Status: job is being validated

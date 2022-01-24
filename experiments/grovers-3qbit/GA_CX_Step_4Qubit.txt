@@ -1,0 +1,16 @@
+Running on device:  ibmq_casablanca
+Job Status: job has successfully run
+0 0.859
+Running on device:  ibmq_casablanca
+Job Status: job has successfully run
+1 0.83
+Running on device:  ibmq_casablanca
+Job Status: job has successfully run
+2 0.756
+Running on device:  ibmq_casablanca
+Job Status: job has successfully run
+3 0.771
+Running on device:  ibmq_casablanca
+Job Status: job has successfully run
+4 0.725
+Running on device:  ibmq_casablanca
