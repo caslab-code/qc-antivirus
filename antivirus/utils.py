@@ -1,10 +1,13 @@
 from typing import Dict, List, Tuple, Union, Optional, Generator
+from collections import OrderedDict
 from qiskit import QuantumCircuit
 from qiskit.qobj import Qobj
 from qiskit.qobj.qasm_qobj import QasmQobj, QasmQobjInstruction
 from circuit_to_dagnc import circuit_to_dagnc
 from networkx import MultiDiGraph
 from retworkx import PyDAG
+
+from dagnc import DAGNC
 
 
 
@@ -67,20 +70,20 @@ def check_matching(
             else:
                 qargs[qubit_qc.index] = qubit_pt.index
     
-        for qubit_qc, qubit_pt in zip(node_qc.cargs, node_pt.cargs):
-            if qubit_qc.index in cargs:
-                if qubit_pt.index != cargs[qubit_qc.index]:
+        for clbit_qc, clbit_pt in zip(node_qc.cargs, node_pt.cargs):
+            if clbit_qc.index in cargs:
+                if clbit_pt.index != cargs[clbit_qc.index]:
                     return False
             else:
-                cargs[qubit_qc.index] = qubit_pt.index
+                cargs[clbit_qc.index] = clbit_pt.index
     
     return True
 
 
 
-def get_mapping(
+def get_bits_mapping(
     matching: Dict
-    ) -> Dict:
+    ) -> Tuple:
     """return the qubit and clbit indices mapping of the matching first item to the second item
 
     Args:
@@ -102,16 +105,134 @@ def get_mapping(
         for qubit_qc, qubit_pt in zip(node_qc.qargs, node_pt.qargs):
             if qubit_qc.index in qargs:
                 if qubit_pt.index != qargs[qubit_qc.index]:
-                    break
+                    raise Exception("Wrong subgraph isomorphism!")
             else:
                 qargs[qubit_qc.index] = qubit_pt.index
     
-        for qubit_qc, qubit_pt in zip(node_qc.cargs, node_pt.cargs):
-            if qubit_qc.index in cargs:
-                if qubit_pt.index != cargs[qubit_qc.index]:
-                    break
+        for clbit_qc, clbit_pt in zip(node_qc.cargs, node_pt.cargs):
+            if clbit_qc.index in cargs:
+                if clbit_pt.index != cargs[clbit_qc.index]:
+                    raise Exception("Wrong subgraph isomorphism!")
             else:
-                cargs[qubit_qc.index] = qubit_pt.index
+                cargs[clbit_qc.index] = clbit_pt.index
     
     return (qargs, cargs)
 
+
+
+def nxmatching_to_id(
+    matching: Dict,
+    sort_pt: bool = False
+    ) -> OrderedDict:
+    """return the qubit and clbit indices mapping of the matching first item to the second item
+
+    Args:
+        matching: the matching returned by subgraph isomorphism searching. Eaching matching
+            is a ``dict``. The key is the node in the first graph, and the corresponding value 
+            is the matching node in the second graph.
+        sort_pt: whether to sort ascendingly based on the indices of the pattern nodes
+
+    Returns:
+        A ``OrderedDict``, whose keys are node indices in the quantum circuit, and values are
+            node indices in the pattern.
+    """
+
+    mapping_nodes_id = OrderedDict()
+
+    for node_qc, node_pt in matching.items():
+        mapping_nodes_id[node_qc.node_id] = node_pt.node_id
+    
+    if sort_pt:
+        mapping_nodes_id = OrderedDict(sorted(mapping_nodes_id.items(), key = lambda x: x[1]))
+
+    return mapping_nodes_id
+
+
+
+def reduce_qc(
+    qc_dagnc: DAGNC,
+    qubit_list: Optional[List[int]] = None,
+    clbit_list: Optional[List[int]] = None,
+    # register_list: Optional[List[int]] = None
+    is_node_id: bool = False
+    ) -> List[QasmQobjInstruction]:
+    """Return the reduced node set of the qc_dagnc, i.e., all nodes that involve qubits in qubit_list
+            or clbits in clbit_list. The node id is ordered.
+
+    Args:
+        qc_dagnc: The quantum circuit to be searched through.
+        qubit_list: The list of qubit indices to be considered.
+        clbit_list: The list of memory indices to be considered.
+        # register_list: The list of register indices to be considered.
+    
+    Returns:
+        The reduced node set of the qc_dagnc, i.e., all nodes that involve qubits in qubit_list
+            or clbits in clbit_list.
+    """
+
+    reduced_nodes = []
+    for node in qc_dagnc.get_nodes():
+        if qubit_list:
+            for qindex in node.qindices:
+                if qindex in qubit_list:
+                    if is_node_id:
+                        reduced_nodes.append(node.node_id)
+                    else:
+                        reduced_nodes.append(node)
+                    break
+        if clbit_list:
+            for cindex in node.cindices:
+                if cindex in clbit_list:
+                    if is_node_id:
+                        reduced_nodes.append(node.node_id)
+                    else:
+                        reduced_nodes.append(node)
+                    break
+
+    return reduced_nodes
+
+
+
+def count_num_bits(
+    qc: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]],
+    bit_type: str = 'qubit'
+    ) -> int:
+    """Return the number of qubits of the given input.
+
+    Args:
+        qc: The input to count qubits. 
+        bit_type: The type of the bits: one of ```qubit```, ```clbit```.
+
+    Returns:
+        The number of qubits in the given input.
+    """
+    if bit_type == 'qubit':
+        if isinstance(qc, QuantumCircuit):
+            num_bits = qc.num_qubits
+        elif isinstance(qc, (QasmQobj, Qobj)):
+            num_bits = qc.config.n_qubits
+        elif isinstance(qc, List) and isinstance(qc[0], QasmQobjInstruction):
+            num_bits = 0
+            qubit_set = []
+            for ins in qc:
+                if hasattr(ins, 'qubits'):
+                    for qubit in ins.qubits:
+                        if qubit not in qubit_set:
+                            num_bits += 1
+                            qubit_set.append(qubit)
+    elif bit_type == 'clbit':
+        if isinstance(qc, QuantumCircuit):
+            num_bits = qc.num_clbits
+        elif isinstance(qc, (QasmQobj, Qobj)):
+            num_bits = qc.config.memory_slots
+        elif isinstance(qc, List) and isinstance(qc[0], QasmQobjInstruction):
+            num_bits = 0
+            clbit_set = []
+            for ins in qc:
+                if hasattr(ins, 'memory'):
+                    for clbit in ins.memory:
+                        if clbit not in clbit_set:
+                            num_bits += 1
+                            clbit_set.append(clbit)
+
+    return num_bits

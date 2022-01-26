@@ -1,6 +1,8 @@
 from qiskit import QuantumCircuit
-from isomorphism import pattern_counter, match
-from utils import get_mapping
+from isomorphism import histogram, pattern_counter, match
+# from utils import get_bits_mapping
+from utils import *
+from circuit_to_dagnc import circuit_to_dagnc
 
 
 # ------------------------------------------------------------------------------------
@@ -9,16 +11,16 @@ from utils import get_mapping
 
 # define circuit on which we perform pattern matching
 # example circuit is:
-#      ┌───┐          ┌───┐     
-# q_0: ┤ H ├──■────■──┤ H ├─────
-#      └───┘┌─┴─┐┌─┴─┐├───┤
-# q_1: ─────┤ X ├┤ X ├┤ H ├─────
-#           └───┘├───┤├───┤┌───┐
-# q_2: ──■────■──┤ H ├┤ X ├┤ H ├
-#      ┌─┴─┐┌─┴─┐└───┘└─┬─┘└───┘
-# q_3: ┤ X ├┤ X ├───────■───────
-#      └───┘└───┘
-# q_4: ─────────────────────────
+#      ┌───┐          ┌───┐
+# q_0: ┤ H ├──■────■──┤ H ├──■────■──
+#      └───┘┌─┴─┐┌─┴─┐├───┤┌─┴─┐┌─┴─┐
+# q_1: ─────┤ X ├┤ X ├┤ H ├┤ X ├┤ X ├
+#           ├───┤└───┘├───┤├───┤└───┘
+# q_2: ─────┤ X ├─────┤ X ├┤ H ├─────
+#      ┌───┐└─┬─┘┌───┐└─┬─┘└───┘
+# q_3: ┤ H ├──■──┤ H ├──■────────────
+#      └───┘     └───┘
+# q_4: ──────────────────────────────
 
 qc = QuantumCircuit(5)
 qc.h(0)
@@ -26,12 +28,17 @@ qc.cx(0, 1)
 qc.cx(0, 1)
 qc.h(1)
 qc.h(0)
-qc.cx(2, 3)
-qc.cx(2, 3)
-qc.h(2)
+qc.cx(0, 1)
+qc.cx(0, 1)
+qc.h(3)
+qc.cx(3, 2)
+qc.h(3)
 qc.cx(3, 2)
 qc.h(2)
-# print(qc.draw('text'))
+qc_dag = circuit_to_dagnc(qc)
+for i in qc_dag.get_nodes():
+    print(i.node_id)
+print(qc.draw('text'))
 
 
 # define pattern to be matched
@@ -66,9 +73,9 @@ print()
 print("--------------------------------------------------------")
 print("1. Output details of all matching\n")
 for i, matching in enumerate(match(qc, pt)):
-    print("Matching " + str(i))
+    print("Matching " + str(i+1))
     print(matching)
-    mapping = get_mapping(matching)
+    mapping = get_bits_mapping(matching)
     print("qubit mapping is: ")
     print(mapping[0])
     print("clbit mapping is: ")
@@ -79,4 +86,13 @@ for i, matching in enumerate(match(qc, pt)):
 #       Count how many patterns in the quantum circuit.
 print("--------------------------------------------------------")
 print("2. Pattern counter\n")
-print("The pattern count in the quantum circuit is: " + str(pattern_counter(qc, pt)))
+print("The pattern count in the quantum circuit is: " + str(pattern_counter(qc, pt, matcher="networkx")))
+
+# 3. Pattern histogram:
+#       Histogram of the pattern in the circuit.
+#       The return value is a dict, whose keys are how many times the pattern appears in series
+#       and values are the counts for them.
+print("--------------------------------------------------------")
+print("3. Pattern histogram\n")
+print("The return value is a dict, whose keys are how many times the pattern appears in series and values are the counts for them.")
+print(histogram(qc, pt, matcher="networkx"))
