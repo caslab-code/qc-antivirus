@@ -38,7 +38,7 @@ qc.h(2)
 qc_dag = circuit_to_dagnc(qc)
 for i in qc_dag.get_nodes():
     print(i.node_id)
-print(qc.draw('text'))
+# print(qc.draw('text'))
 
 
 # define pattern to be matched
@@ -87,6 +87,7 @@ for i, matching in enumerate(match(qc, pt)):
 print("--------------------------------------------------------")
 print("2. Pattern counter\n")
 print("The pattern count in the quantum circuit is: " + str(pattern_counter(qc, pt, matcher="networkx")))
+print()
 
 # 3. Pattern histogram:
 #       Histogram of the pattern in the circuit.

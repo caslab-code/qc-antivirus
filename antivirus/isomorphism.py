@@ -85,7 +85,7 @@ def pattern_counter(
         The number of appearances of a pattern in a given quantum circuit.
     """
 
-    return len(list(match(qc, pt, matcher="networkx")))
+    return len(list(match(qc, pt, matcher=matcher)))
 
 
 
