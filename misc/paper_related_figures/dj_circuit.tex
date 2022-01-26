@@ -1,0 +1,14 @@
+\documentclass[border=2px]{standalone}
+        
+\usepackage[braket, qm]{qcircuit}
+\usepackage{graphicx}
+
+\begin{document} 
+\scalebox{1.0}{
+\Qcircuit @C=1.0em @R=0.2em @!R { \\
+	 	\nghost{ {q}_{0} :  } & \lstick{ {q}_{0} :  } & \gate{\mathrm{H}} & \qw & \multigate{2}{\mathrm{Oracle}}_<<<{0} & \gate{\mathrm{H}} & \meter & \qw & \qw & \qw\\ 
+	 	\nghost{ {q}_{1} :  } & \lstick{ {q}_{1} :  } & \gate{\mathrm{H}} & \qw & \ghost{\mathrm{Oracle}}_<<<{1} & \gate{\mathrm{H}} & \qw & \meter & \qw & \qw\\ 
+	 	\nghost{ {q}_{2} :  } & \lstick{ {q}_{2} :  } & \gate{\mathrm{X}} & \gate{\mathrm{H}} & \ghost{\mathrm{Oracle}}_<<<{2} & \qw & \qw & \qw & \qw & \qw\\ 
+	 	\nghost{c:} & \lstick{c:} & \lstick{/_{_{2}}} \cw & \cw & \cw & \cw & \dstick{_{_{0}}} \cw \cwx[-3] & \dstick{_{_{1}}} \cw \cwx[-2] & \cw & \cw\\ 
+\\ }}
+\end{document}

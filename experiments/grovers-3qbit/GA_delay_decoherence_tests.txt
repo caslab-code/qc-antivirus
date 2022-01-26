@@ -1,0 +1,39 @@
+ibmq_lima
+0, 0.911
+1, 0.917
+2, 0.92
+3, 0.913
+4, 0.861
+5, 0.609
+6, 0.026
+7, 0.002
+8, 0.004
+9, 0.001
+ob Status: job has successfully run
+1 0.917
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+2 0.92
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+3 0.913
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+4 0.861
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+5 0.609
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+6 0.026
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+7 0.002
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+8 0.004
+Running on device:  ibmq_lima
+Job Status: job has successfully run
+9 0.001
+Running on device:  ibmq_lima
+Job Status: job incurred error     
