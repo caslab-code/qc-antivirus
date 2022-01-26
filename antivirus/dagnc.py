@@ -155,6 +155,8 @@ class DAGNC:
             ) from ex
         dag_networkx = nx.MultiDiGraph()
 
+        # for node in self.get_nodes():
+        #     dag_networkx.add_node(node)
         for node in self.get_nodes():
             dag_networkx.add_node(node, name = node.name, qargs = node.qargs, cargs = node.cargs)
         for node in self.topological_nodes():

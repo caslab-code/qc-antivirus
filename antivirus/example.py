@@ -1,5 +1,6 @@
 from qiskit import QuantumCircuit
 from isomorphism import pattern_counter, match
+from utils import get_mapping
 
 
 # ------------------------------------------------------------------------------------
@@ -64,8 +65,15 @@ print()
 #       the node in the pattern. The type of the node is ``qiskit.dagcircuit.dagdepnode.DAGDepNode``.
 print("--------------------------------------------------------")
 print("1. Output details of all matching\n")
-for matching in match(qc, pt):
+for i, matching in enumerate(match(qc, pt)):
+    print("Matching " + str(i))
     print(matching)
+    mapping = get_mapping(matching)
+    print("qubit mapping is: ")
+    print(mapping[0])
+    print("clbit mapping is: ")
+    print(mapping[1])
+    print()
 
 # 2. Pattern counter:
 #       Count how many patterns in the quantum circuit.

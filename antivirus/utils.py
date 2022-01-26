@@ -75,3 +75,43 @@ def check_matching(
                 cargs[qubit_qc.index] = qubit_pt.index
     
     return True
+
+
+
+def get_mapping(
+    matching: Dict
+    ) -> Dict:
+    """return the qubit and clbit indices mapping of the matching first item to the second item
+
+    Args:
+        matching: the matching returned by subgraph isomorphism searching. Eaching matching
+            is a ``dict``. The key is the node in the first graph, and the corresponding value 
+            is the matching node in the second graph.
+
+    Returns:
+        A ``Tuple``, whose first item is qubit indices mapping, and the second item is clbit
+        indices mapping. The mapping is a ``Dict``, whose keys are the indices in the first
+        graph, and values are the indices in the second graph.
+    """
+
+    qargs = {} # store qubits mapping of currently transversed gates
+    cargs = {} # store clbits mapping of currently transversed gates
+
+    # Eaching matching is a ``dict``. The key is the node in the first graph, and the corresponding value is the matching node in the second graph
+    for node_qc, node_pt in matching.items():
+        for qubit_qc, qubit_pt in zip(node_qc.qargs, node_pt.qargs):
+            if qubit_qc.index in qargs:
+                if qubit_pt.index != qargs[qubit_qc.index]:
+                    break
+            else:
+                qargs[qubit_qc.index] = qubit_pt.index
+    
+        for qubit_qc, qubit_pt in zip(node_qc.cargs, node_pt.cargs):
+            if qubit_qc.index in cargs:
+                if qubit_pt.index != cargs[qubit_qc.index]:
+                    break
+            else:
+                cargs[qubit_qc.index] = qubit_pt.index
+    
+    return (qargs, cargs)
+
