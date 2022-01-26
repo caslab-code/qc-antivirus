@@ -1,13 +1,12 @@
-# initialization
+#initialization
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 import argparse
 
 # importing Qiskit
-from qiskit import IBMQ, Aer
+from qiskit import IBMQ, Aer, assemble, transpile
+from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
 from qiskit.providers.ibmq import least_busy
-from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister, transpile, assemble
 
 # import basic plot tools
 from qiskit.visualization import plot_histogram
@@ -93,75 +92,51 @@ def malicious_circuit_gen(copies, mal_type): # copies- decides the depth of the 
     
     return mal_circuit
 
-def bv_algorithm(s, n):
-    # We need a circuit with n qubits, plus one auxiliary qubit
-    # Also need n classical bits to write the output to
-    bv_circuit = QuantumCircuit(n+1, n)
-
-    # put auxiliary in state |->
-    bv_circuit.h(n)
-    bv_circuit.z(n)
-
-    # Apply Hadamard gates before querying the oracle
-    for i in range(n):
-        bv_circuit.h(i)
-
-    # Apply barrier 
-    bv_circuit.barrier()
-
-    # Apply the inner-product oracle
-    s = s[::-1] # reverse s to fit qiskit's qubit ordering
-    for q in range(n):
-        if s[q] == '0':
-            bv_circuit.i(q)
-        else:
-            bv_circuit.cx(q, n)
-
-    # Apply barrier 
-    bv_circuit.barrier()
-
-    #Apply Hadamard gates after querying the oracle
-    for i in range(n):
-        bv_circuit.h(i)
-    
-    # Measurement
-    for i in range(n):
-        bv_circuit.measure(i, i)
-    
-    return bv_circuit
+def initialize_s(qc, qubits):
+    """Apply a H-gate to 'qubits' in qc"""
+    for q in qubits:
+        qc.h(q)
+    return qc
  
     
-# def bv_old(s, n):
-    # n = int(n)
-    # bv_circuit = bv_algorithm(s, n)
+def grovers_algorithm():
+    n = 2
+    grover_circuit = QuantumCircuit(n)
+    grover_circuit = initialize_s(grover_circuit, [0,1])
+   
+    grover_circuit.cz(0,1) # Oracle
+
+    # Diffusion operator (U_s)
+    grover_circuit.h([0,1])
+    grover_circuit.z([0,1])
+    grover_circuit.cz(0,1)
+    grover_circuit.h([0,1])
+    return grover_circuit
+    
+# def grover_2qbit():
+    # grover_circuit = grovers_algorithm()
     # aer_sim = Aer.get_backend('aer_simulator')
-    # tranpiled_bv = transpile(bv_circuit, aer_sim)
-    
+    # tranpiled_grover_circuit = transpile(grover_circuit, aer_sim)
     ##FIXME antivirus should go here I think 
-    ##f = open("transpiled_bv.json", "w")
-    ##f.write(str(assemble(tranpiled_bv)))
+    ##f = open("transpiled_grover_2qbit.json", "w")
+    ##f.write(str(assemble(tranpiled_grover_circuit)))
     ##f.close()
-    
-    # total_pattern = 0
     # print("Search Pattern:") 
     # print(pt)
-    # for i in range(0,n-1):
-        # for j in range(i+1, n):
-            # pattern = search_pattern.search_pattern_defined_bits(tranpiled_bv, pt, [i,j])
-            # print("No. of patterns detected between Qbit",i,"and Qbit",j, "are", pattern)
-            # total_pattern = total_pattern + pattern
-    
-    # print("Total Number of Patterns detected", total_pattern)
-    
+    # pattern = search_pattern.search_pattern_defined_bits(tranpiled_grover_circuit, pt, bit_map)
+    # print("No. of patterns detected between Qbit 0 and Qbit 1 are", pattern)
+    ##if (pattern > 0):
+    ##    print("Malicious Code")
+    ##else:
+    ##    print("Safe Code")
     # return 
 
-def bv(s, n, mal_type, copies):
-    #for our application s = "01", n = 2
-    n = int(n)
-    qc = bv_algorithm(s, n)
+def ga(mal_type ="M1", copies =1):
+    qc = grovers_algorithm()
     pt = malicious_circuit_gen(copies, mal_type)
+    
     print("--------------------------------------------------------")
-    print("Bernstein-Vazarani Circuit", "\n Search String = ", s, "\n Number of Qubits =", n) 
+    print("Grover's 2-Qubit Circuit \n") 
     print(qc)
     
     print("Search Pattern:") 
@@ -174,17 +149,17 @@ def bv(s, n, mal_type, copies):
     #       Count how many patterns in the quantum circuit.
     print("--------------------------------------------------------")
     print("2. Pattern counter\n")
-    print("The pattern count in the quantum circuit is: " + str(pattern_counter(qc, pt)))    
+    print("The pattern count in the quantum circuit is: " + str(pattern_counter(qc, pt)))
    
-    
     return 
 
     
 parser = argparse.ArgumentParser()
-parser.add_argument('-s','--string', type=str, required=True, help='Hidden binary String')
-parser.add_argument('-w','--width', type=int, required=True, help='Width of binary string')
 parser.add_argument('-m','--mal_type', type=str, required=True, help='Malicious Circuit type options M1 - M10')
 parser.add_argument('-k','--copies', type=int, required=True, help='Defines depth of the malicious circuit')
 
+
 args = parser.parse_args()
-bv(args.string, args.width, args.mal_type, args.copies)    
+ga(args.mal_type, args.copies)
+
+# grover_2qbit()    
