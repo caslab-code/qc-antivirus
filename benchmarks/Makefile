@@ -11,8 +11,8 @@ default: run
 run: 
 	python bv.py -s $(string) -w $(width) -m $(mal_type) -k $(copies)
 	python dj.py -c $(case) -w $(width) -m $(mal_type) -k $(copies)
-	python grover_2qbit.py
-	python grover_3qbit.py
+	python ga.py -m $(mal_type) -k $(copies)
+
 
 clean:
 	rm -rf *.json
