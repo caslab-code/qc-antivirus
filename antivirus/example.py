@@ -35,9 +35,6 @@ qc.cx(3, 2)
 qc.h(3)
 qc.cx(3, 2)
 qc.h(2)
-qc_dag = circuit_to_dagnc(qc)
-for i in qc_dag.get_nodes():
-    print(i.node_id)
 # print(qc.draw('text'))
 
 
@@ -70,30 +67,34 @@ print()
 #       Return a generator which generates the matching. Each item is a dict, whose
 #       key is the corresponding matching node in the quantum circuit and value is
 #       the node in the pattern. The type of the node is ``qiskit.dagcircuit.dagdepnode.DAGDepNode``.
-print("--------------------------------------------------------")
-print("1. Output details of all matching\n")
+print("--------------------------------------------------------------------------------------------------")
+print("\n1. Output details of all matching\n")
 for i, matching in enumerate(match(qc, pt)):
-    print("Matching " + str(i+1))
+    print("Matching " + str(i+1) + ":\n")
+    print("(a) Node mapping ({node in the quantum circuit: node in the pattern}):")
     print(matching)
+    print("\n(b) Qubit and clbit index mapping:")
     mapping = get_bits_mapping(matching)
-    print("qubit mapping is: ")
+    print("Qubit index mapping is ({index in the quantum circuit: index in the pattern}): ")
     print(mapping[0])
-    print("clbit mapping is: ")
+    print("Clbit index mapping is ({index in the quantum circuit: index in the pattern}): ")
     print(mapping[1])
+    print()
+    print()
     print()
 
 # 2. Pattern counter:
 #       Count how many patterns in the quantum circuit.
-print("--------------------------------------------------------")
-print("2. Pattern counter\n")
-print("The pattern count in the quantum circuit is: " + str(pattern_counter(qc, pt, matcher="networkx")))
+print("--------------------------------------------------------------------------------------------------")
+print("\n2. Pattern counter\n")
+print("The appearances of the pattern in the quantum circuit is: " + str(pattern_counter(qc, pt, matcher="networkx")))
 print()
 
 # 3. Pattern histogram:
 #       Histogram of the pattern in the circuit.
 #       The return value is a dict, whose keys are how many times the pattern appears in series
 #       and values are the counts for them.
-print("--------------------------------------------------------")
-print("3. Pattern histogram\n")
-print("The return value is a dict, whose keys are how many times the pattern appears in series and values are the counts for them.")
+print("--------------------------------------------------------------------------------------------------")
+print("\n3. Pattern histogram\n")
+print("{Number of the pattern in a continuous appearance: count for this appearance}")
 print(histogram(qc, pt, matcher="networkx"))
