@@ -1,3 +1,9 @@
+# This code was modified based on ``qiskit.dagcircuit.dagdependency``.
+# Main modification is to only maintain the commutativity between gates operating
+# on different qubits and clbits but delete commutativity between all other gates.
+# Nearly all other parts are the same as the previous file.
+# Below is the license part of previous Qiskit file.
+# -------------------------------------------------------------------------------
 # This code is part of Qiskit.
 #
 # (C) Copyright IBM 2020.
@@ -21,27 +27,26 @@ import retworkx as rx
 
 from qiskit.circuit.quantumregister import QuantumRegister, Qubit
 from qiskit.circuit.classicalregister import ClassicalRegister, Clbit
-from qiskit.dagcircuit.exceptions import DAGDependencyError
 from qiskit.dagcircuit.dagdepnode import DAGDepNode
-from qiskit.quantum_info.operators import Operator
 from qiskit.exceptions import MissingOptionalLibraryError
 
 
 class DAGNC:
     """Object to represent a quantum circuit as a directed acyclic graph
     (DAG). Compared with ``qiskit.dagcircuit.dagcircuit.DAGCircuit``, this
-    class do not have inputs and outputs node, which means there is only 
+    class do not have inputs and outputs node, which means there are only 
     operation nodes; compared with ``qiskit.dagcircuit.dagdependency.DAGDependency``,
     this class only considers the commutativity between two gates whose
-    qargs do not cross with each other, which means there are edges between
-    all nodes in order, except the gates operate on different qubits.
-    We define it to be directed acyclic graph with non-commutativity (DAGNC).
+    qargs and cargs do not cross with each other, which means there are 
+    edges between all nodes in serial, except the gates operating on different 
+    qubits and clbits. We define it to be directed acyclic graph with 
+    non-commutativity (DAGNC).
 
-    The nodes in the graph are operations represented by quantum gates.
-    The edges correspond to non-commutation between two operations
-    (i.e. a dependency). A directed edge from node A to node B means that
-    operation A does not commute with operation B.
-    The object's methods allow circuits to be constructed.
+    Note: this class is modified based on ``qiskit.dagcircuit.dagdependency``,
+        Main modification is to only maintain the commutativity between gates 
+        operating on different qubits and clbits but delete commutativity 
+        between all other gates. Nearly all other parts are the same as the 
+        previous file.
 
     The nodes in the graph have the following attributes:
     'operation', 'successors', 'predecessors'.
@@ -58,11 +63,11 @@ class DAGNC:
         qr_1: ─────┤ X ├
                    └───┘
 
-    The dependency DAG for the above circuit is represented by two nodes.
+    The DAGNC for the above circuit is represented by two nodes.
     The first one corresponds to Hadamard gate, the second one to the CNOT gate
-    as the gates do not commute there is an edge between the two nodes.
+    as the gates are in serial there is an edge between the two nodes.
 
-    **Reference:**
+    **DAGDependency Reference:**
 
     [1] Iten, R., Moyard, R., Metger, T., Sutter, D. and Woerner, S., 2020.
     Exact and practical pattern matching for quantum circuit optimization.
@@ -72,7 +77,7 @@ class DAGNC:
 
     def __init__(self):
         """
-        Create an empty DAGDependency.
+        Create an empty DAGNC.
         """
         # Circuit name
         self.name = None
@@ -142,7 +147,7 @@ class DAGNC:
         self._calibrations = defaultdict(dict, calibrations)
 
     def to_networkx(self):
-        """Returns a copy of the DAGDependency in networkx format."""
+        """Returns a copy of the DAGNC in networkx format."""
         # For backwards compatibility, return networkx structure from terra 0.12
         # where DAGNodes instances are used as indexes on the networkx graph.
         try:
@@ -150,13 +155,11 @@ class DAGNC:
         except ImportError as ex:
             raise MissingOptionalLibraryError(
                 libname="Networkx",
-                name="DAG dependency",
+                name="DAGNC",
                 pip_install="pip install networkx",
             ) from ex
         dag_networkx = nx.MultiDiGraph()
 
-        # for node in self.get_nodes():
-        #     dag_networkx.add_node(node)
         for node in self.get_nodes():
             dag_networkx.add_node(node, name = node.name, qargs = node.qargs, cargs = node.cargs)
         for node in self.topological_nodes():
@@ -165,7 +168,7 @@ class DAGNC:
         return dag_networkx
 
     def to_retworkx(self):
-        """Returns the DAGDependency in retworkx format."""
+        """Returns the DAGNC in retworkx format."""
         return self._multi_graph
 
     def size(self):
@@ -183,31 +186,31 @@ class DAGNC:
     def add_qubits(self, qubits):
         """Add individual qubit wires."""
         if any(not isinstance(qubit, Qubit) for qubit in qubits):
-            raise DAGDependencyError("not a Qubit instance.")
+            raise Exception("not a Qubit instance.")
 
         duplicate_qubits = set(self.qubits).intersection(qubits)
         if duplicate_qubits:
-            raise DAGDependencyError("duplicate qubits %s" % duplicate_qubits)
+            raise Exception("duplicate qubits %s" % duplicate_qubits)
 
         self.qubits.extend(qubits)
 
     def add_clbits(self, clbits):
         """Add individual clbit wires."""
         if any(not isinstance(clbit, Clbit) for clbit in clbits):
-            raise DAGDependencyError("not a Clbit instance.")
+            raise Exception("not a Clbit instance.")
 
         duplicate_clbits = set(self.clbits).intersection(clbits)
         if duplicate_clbits:
-            raise DAGDependencyError("duplicate clbits %s" % duplicate_clbits)
+            raise Exception("duplicate clbits %s" % duplicate_clbits)
 
         self.clbits.extend(clbits)
 
     def add_qreg(self, qreg):
         """Add qubits in a quantum register."""
         if not isinstance(qreg, QuantumRegister):
-            raise DAGDependencyError("not a QuantumRegister instance.")
+            raise Exception("not a QuantumRegister instance.")
         if qreg.name in self.qregs:
-            raise DAGDependencyError("duplicate register %s" % qreg.name)
+            raise Exception("duplicate register %s" % qreg.name)
         self.qregs[qreg.name] = qreg
         existing_qubits = set(self.qubits)
         for j in range(qreg.size):
@@ -217,9 +220,9 @@ class DAGNC:
     def add_creg(self, creg):
         """Add clbits in a classical register."""
         if not isinstance(creg, ClassicalRegister):
-            raise DAGDependencyError("not a ClassicalRegister instance.")
+            raise Exception("not a ClassicalRegister instance.")
         if creg.name in self.cregs:
-            raise DAGDependencyError("duplicate register %s" % creg.name)
+            raise Exception("duplicate register %s" % creg.name)
         self.cregs[creg.name] = creg
         existing_clbits = set(self.clbits)
         for j in range(creg.size):
@@ -428,7 +431,7 @@ class DAGNC:
             direct_pred (list): list of direct successors for the given node
 
         Returns:
-            DAGDependency: A multigraph with update of the attribute ['predecessors']
+            DAGNC: A multigraph with update of the attribute ['predecessors']
             the lists of direct successors are put into a single one
         """
         gather = self._multi_graph
@@ -477,7 +480,7 @@ class DAGNC:
         """
         Function to verify the commutation relation and reachability
         for predecessors, the nodes do not commute and
-        if the predecessor is reachable. Update the DAGDependency by
+        if the predecessor is reachable. Update the DAGNC by
         introducing edges and predecessors(attribute)
         """
         max_node_id = len(self._multi_graph) - 1
@@ -499,8 +502,8 @@ class DAGNC:
     def _add_successors(self):
         """
         Use _gather_succ and merge_no_duplicates to create the list of successors
-        for each node. Update DAGDependency 'successors' attribute. It has to
-        be used when the DAGDependency() object is complete (i.e. converters).
+        for each node. Update DAGNC 'successors' attribute. It has to
+        be used when the DAGNC() object is complete (i.e. converters).
         """
         for node_id in range(len(self._multi_graph) - 1, -1, -1):
             direct_successors = self.direct_successors(node_id)
@@ -513,9 +516,9 @@ class DAGNC:
 
     def copy(self):
         """
-        Function to copy a DAGDependency object.
+        Function to copy a DAGNC object.
         Returns:
-            DAGDependency: a copy of a DAGDependency object.
+            DAGNC: a copy of a DAGNC object.
         """
 
         dag = DAGNC()
@@ -531,7 +534,7 @@ class DAGNC:
 
     def draw(self, scale=0.7, filename=None, style="color"):
         """
-        Draws the DAGDependency graph.
+        Draws the DAGNC graph.
 
         This function needs `pydot <https://github.com/erocarrera/pydot>`, which in turn needs
         Graphviz <https://www.graphviz.org/>` to be installed.
@@ -569,6 +572,8 @@ def merge_no_duplicates(*iterables):
 
 def _does_commute(node1, node2):
     """Function to verify commutation relation between two nodes in the DAG.
+    Different to ``qiskit.dagcircuit.dagdependency.DAGDependency``, we only
+    consider gates operating on different qubits and clbits to be commutable.
 
     Args:
         node1 (DAGnode): first node operation
@@ -585,51 +590,5 @@ def _does_commute(node1, node2):
     # Create set of cbits on which the operation acts
     carg1 = [node1.cargs[i] for i in range(0, len(node1.cargs))]
     carg2 = [node2.cargs[i] for i in range(0, len(node2.cargs))]
-
-    # Commutation for classical conditional gates
-    # if and only if the qubits are different.
-    # TODO: qubits can be the same if conditions are identical and
-    # the non-conditional gates commute.
-    if node1.type == "op" and node2.type == "op":
-        if node1.op.condition or node2.op.condition:
-            intersection = set(qarg1).intersection(set(qarg2))
-            return not intersection
-
-    # Commutation for non-unitary or parameterized or opaque ops
-    # (e.g. measure, reset, directives or pulse gates)
-    # if and only if the qubits and clbits are different.
-    non_unitaries = ["measure", "reset", "initialize", "delay"]
-
-    def _unknown_commutator(n):
-        return n.op._directive or n.name in non_unitaries or n.op.is_parameterized()
-
-    if _unknown_commutator(node1) or _unknown_commutator(node2):
-        intersection_q = set(qarg1).intersection(set(qarg2))
-        intersection_c = set(carg1).intersection(set(carg2))
-        return not (intersection_q or intersection_c)
-
-    # Known non-commuting gates (TODO: add more).
-    non_commute_gates = [{"x", "y"}, {"x", "z"}]
-    if qarg1 == qarg2 and ({node1.name, node2.name} in non_commute_gates):
-        return False
     
-    return not set(qarg1).intersection(set(qarg2)) and not set(carg1).intersection(set(carg2))
-
-    # # Create matrices to check commutation relation if no other criteria are matched
-    # qarg = list(set(node1.qargs + node2.qargs))
-    # qbit_num = len(qarg)
-
-    # qarg1 = [qarg.index(q) for q in node1.qargs]
-    # qarg2 = [qarg.index(q) for q in node2.qargs]
-
-    # dim = 2 ** qbit_num
-    # id_op = np.reshape(np.eye(dim), (2, 2) * qbit_num)
-
-    # op1 = np.reshape(node1.op.to_matrix(), (2, 2) * len(qarg1))
-    # op2 = np.reshape(node2.op.to_matrix(), (2, 2) * len(qarg2))
-
-    # op = Operator._einsum_matmul(id_op, op1, qarg1)
-    # op12 = Operator._einsum_matmul(op, op2, qarg2, right_mul=False)
-    # op21 = Operator._einsum_matmul(op, op2, qarg2, shift=qbit_num, right_mul=True)
-
-    # return np.allclose(op12, op21)
+    return not (set(qarg1).intersection(set(qarg2)) or set(carg1).intersection(set(carg2)))

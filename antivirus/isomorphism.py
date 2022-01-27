@@ -1,12 +1,17 @@
-from collections import OrderedDict
-from typing import Dict, Generator, List, Tuple, Union, Optional
-from qiskit import QuantumCircuit, assemble
-from qiskit.qobj import Qobj
-from qiskit.qobj.qasm_qobj import QasmQobj, QasmQobjInstruction
-# from qiskit.dagcircuit.dagdepnode import DAGDepNode
+from typing import Dict, Generator, Optional
+from qiskit import QuantumCircuit
+from qiskit.exceptions import MissingOptionalLibraryError
 
-from networkx.algorithms.isomorphism import DiGraphMatcher
-from retworkx import vf2_mapping
+try:
+    from networkx.algorithms.isomorphism import DiGraphMatcher
+except ImportError as ex:
+    raise MissingOptionalLibraryError(
+        libname="Networkx",
+        name="DAGNC",
+        pip_install="pip install networkx",
+    ) from ex
+
+# from retworkx import vf2_mapping
 
 from circuit_to_dagnc import circuit_to_dagnc
 from utils import circuit_to_network, check_matching, get_bits_mapping, nxmatching_to_id, reduce_qc
@@ -14,8 +19,8 @@ from utils import circuit_to_network, check_matching, get_bits_mapping, nxmatchi
 
 
 def match(
-    qc: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]], 
-    pt: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]], 
+    qc: QuantumCircuit, 
+    pt: QuantumCircuit,
     matcher : Optional[str] = "networkx"
     ) -> Generator:
     """Yield the matching of a pattern in a quantum circuit.
@@ -49,7 +54,6 @@ def match(
             return n1['name'] == n2['name']
 
         matcher = DiGraphMatcher(qc_net, pt_net, node_match = _gate_match)
-        # matcher = DiGraphMatcher(qc_net, pt_net, node_match = DAGDepNode.semantic_eq)
 
         for matching in matcher.subgraph_isomorphisms_iter():
             if check_matching(matching):
@@ -68,8 +72,8 @@ def match(
 
 
 def pattern_counter(
-    qc: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]], 
-    pt: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]],
+    qc: QuantumCircuit, 
+    pt: QuantumCircuit,
     matcher : Optional[str] = "networkx"
     ) -> int:
     """Count the appearances of a pattern in a given quantum circuit.
@@ -90,8 +94,8 @@ def pattern_counter(
 
 
 def histogram(
-    qc: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]], 
-    pt: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]], 
+    qc: QuantumCircuit, 
+    pt: QuantumCircuit,
     matcher : Optional[str] = "networkx"
     ) -> Dict[int, int]:
     """Return the histogram of the number of appearances of the pattern in the quantum circuit.
@@ -162,8 +166,10 @@ def histogram(
                         hist[count] = 1
                     break
                 curr_start = reduced_node_ids.index(id_matching[curr][0])
-                p_start = reduced_node_ids.index(id_matching[i][0])
-                if p_start - curr_start == num_pt_op:
+                curr_end = reduced_node_ids.index(id_matching[curr][-1])
+                next_start = reduced_node_ids.index(id_matching[i][0])
+                next_end = reduced_node_ids.index(id_matching[i][-1])
+                if next_start - curr_start == num_pt_op and next_end - curr_end == num_pt_op:
                     count += 1
                 else:
                     if count in hist:

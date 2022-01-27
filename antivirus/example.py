@@ -1,8 +1,6 @@
 from qiskit import QuantumCircuit
 from isomorphism import histogram, pattern_counter, match
-# from utils import get_bits_mapping
-from utils import *
-from circuit_to_dagnc import circuit_to_dagnc
+from utils import get_bits_mapping
 
 
 # ------------------------------------------------------------------------------------

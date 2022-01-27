@@ -1,31 +1,34 @@
-from typing import Dict, List, Tuple, Union, Optional, Generator
-from collections import OrderedDict
 from qiskit import QuantumCircuit
 from qiskit.qobj import Qobj
 from qiskit.qobj.qasm_qobj import QasmQobj, QasmQobjInstruction
-from circuit_to_dagnc import circuit_to_dagnc
+from qiskit.dagcircuit.dagdepnode import DAGDepNode
+
 from networkx import MultiDiGraph
 from retworkx import PyDAG
 
-from dagnc import DAGNC
+from typing import Dict, List, Tuple, Union, Optional
+from collections import OrderedDict
 
+from dagnc import DAGNC
+from circuit_to_dagnc import circuit_to_dagnc
 
 
 def circuit_to_network(
-    qc: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]],
+    qc: QuantumCircuit, 
     network_type : str = "networkx"
-    ) -> MultiDiGraph:
-    """Convert a quantum circuit to ``networkx.MultiDiGraph``
+    ) -> MultiDiGraph or PyDAG:
+    """Convert a quantum circuit to ``networkx.MultiDiGraph`` or ``retworkx.PyDAG``.
 
     Args:
         qc: The quantum circuit to be converted.
-        network_type: The package for the graph representation. If set to ``networkx``,
-            ``networkx.algorithms.isomorphism.DiGraphMatcher`` is used; if set to ``retworkx``,
-            ``retworkx.vf2_mapping`` is used.
+        network_type: The package for the graph representation. If set to ``"networkx"``,
+            the quantum circuit is converted to ``networkx.MultiDiGraph``; if set to 
+            ``"retworkx"``, the quantum circuit is converted to ``retworkx.PyDAG``;
     
-    Yiled:
-        The matching of a pattern in a quantum circuit.
+    Return:
+        The graph representation of a quantum circuit.
     """
+
     if network_type == "networkx":
         qc_dag = circuit_to_dagnc(qc)
         qc_net = qc_dag.to_networkx()
@@ -83,7 +86,7 @@ def check_matching(
 
 def get_bits_mapping(
     matching: Dict
-    ) -> Tuple:
+    ) -> Tuple[Dict, Dict]:
     """return the qubit and clbit indices mapping of the matching first item to the second item
 
     Args:
@@ -155,7 +158,7 @@ def reduce_qc(
     clbit_list: Optional[List[int]] = None,
     # register_list: Optional[List[int]] = None
     is_node_id: bool = False
-    ) -> List[QasmQobjInstruction]:
+    ) -> List[DAGDepNode or int]:
     """Return the reduced node set of the qc_dagnc, i.e., all nodes that involve qubits in qubit_list
             or clbits in clbit_list. The node id is ordered.
 
@@ -197,7 +200,7 @@ def count_num_bits(
     qc: Union[QuantumCircuit, QasmQobj, Qobj, List[QasmQobjInstruction]],
     bit_type: str = 'qubit'
     ) -> int:
-    """Return the number of qubits of the given input.
+    """Return the number of qubits or clbites of the given input.
 
     Args:
         qc: The input to count qubits. 
@@ -206,6 +209,7 @@ def count_num_bits(
     Returns:
         The number of qubits in the given input.
     """
+
     if bit_type == 'qubit':
         if isinstance(qc, QuantumCircuit):
             num_bits = qc.num_qubits
@@ -220,6 +224,7 @@ def count_num_bits(
                         if qubit not in qubit_set:
                             num_bits += 1
                             qubit_set.append(qubit)
+    
     elif bit_type == 'clbit':
         if isinstance(qc, QuantumCircuit):
             num_bits = qc.num_clbits
