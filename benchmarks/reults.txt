@@ -1,0 +1,39 @@
+#results
+
+width = 2
+string = "01"
+case = "balanced" # other option is constant
+copies = 2
+
+
+Grover_2qbits.py
+
+Inside Gramine (sec)		Outside Gramine (sec)
+
+M1: 247.818			M1: 1.053
+M2: 247.934			M2: 1.048
+M3: 248.623			M3: 1.046
+M4: 248.500			M4: 1.048
+M5: 248.686			M5: 1.052
+M6: 247.737			M6: 1.053
+M7: 247.563			M7: 1.055
+M8: 248.965			M8: 1.061
+M9: 247.964			M9: 1.060
+M10: 247.365		M10: 1.0495
+
+
+Deutsch-Josza.py
+
+
+Inside Gramine (sec)		Outside Gramine (sec)
+
+M1: 229.267			M1: 0.892
+M2: 229.103			M2: 0.898
+M3: 229.478			M3: 0.896
+M4: 230.175			M4: 0.901
+M5: 229.843			M5: 0.910
+M6: 230.092			M6: 0.888
+M7: 230.361			M7: 0.891
+M8: 229.448			M8: 0.892
+M9: 229.794			M9: 0.896
+M10: 229.280		M10: 0.892
