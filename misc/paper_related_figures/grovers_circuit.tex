@@ -6,8 +6,8 @@
 \begin{document} 
 \scalebox{1.0}{
 \Qcircuit @C=1.0em @R=0.2em @!R { \\
-	 	\nghost{ {q}_{0} :  } & \lstick{ {q}_{0} :  } & \gate{\mathrm{H}} & \ctrl{1} & \gate{\mathrm{H}} & \gate{\mathrm{Z}} & \ctrl{1} & \gate{\mathrm{H}} \barrier[0em]{1} & \qw & \meter & \qw & \qw & \qw\\ 
-	 	\nghost{ {q}_{1} :  } & \lstick{ {q}_{1} :  } & \gate{\mathrm{H}} & \control\qw & \gate{\mathrm{H}} & \gate{\mathrm{Z}} & \control\qw & \gate{\mathrm{H}} & \qw & \qw & \meter & \qw & \qw\\ 
-	 	\nghost{meas:} & \lstick{meas:} & \lstick{/_{_{2}}} \cw & \cw & \cw & \cw & \cw & \cw & \cw & \dstick{_{_{0}}} \cw \cwx[-2] & \dstick{_{_{1}}} \cw \cwx[-1] & \cw & \cw\\ 
+	 	\nghost{ {q}_{0} :  } & \lstick{ {q}_{0} :  } & \gate{\mathrm{H}} & \ctrl{1} & \gate{\mathrm{H}} & \gate{\mathrm{Z}} & \ctrl{1} & \gate{\mathrm{H}} & \meter & \qw & \qw & \qw\\ 
+	 	\nghost{ {q}_{1} :  } & \lstick{ {q}_{1} :  } & \gate{\mathrm{H}} & \control\qw & \gate{\mathrm{H}} & \gate{\mathrm{Z}} & \control\qw & \gate{\mathrm{H}} & \qw & \meter & \qw & \qw\\ 
+	 	\nghost{c:} & \lstick{c:} & \lstick{/_{_{2}}} \cw & \cw & \cw & \cw & \cw & \cw & \dstick{_{_{0}}} \cw \cwx[-2] & \dstick{_{_{1}}} \cw \cwx[-1] & \cw & \cw\\ 
 \\ }}
 \end{document}

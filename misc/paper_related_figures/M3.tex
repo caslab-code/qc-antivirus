@@ -6,7 +6,7 @@
 \begin{document} 
 \scalebox{1.0}{
 \Qcircuit @C=1.0em @R=0.8em @!R { \\
-	 	\nghost{ {q}_{0} :  } & \lstick{ {q}_{0} :  } & \ctrl{1} & \targ & \ctrl{1} & \targ & \qw & \qw\\ 
-	 	\nghost{ {q}_{1} :  } & \lstick{ {q}_{1} :  } & \targ & \ctrl{-1} & \targ & \ctrl{-1} & \qw & \qw\\ 
+	 	\nghost{ {q}_{0} :  } & \lstick{ {q}_{0} :  } & \ctrl{1} & \gate{\mathrm{Delay}\,(\mathrm{0[dt]})} & \targ & \gate{\mathrm{Delay}\,(\mathrm{0[dt]})} & \qw & \qw\\ 
+	 	\nghost{ {q}_{1} :  } & \lstick{ {q}_{1} :  } & \targ & \qw & \ctrl{-1} & \qw & \qw & \qw\\ 
 \\ }}
 \end{document}
