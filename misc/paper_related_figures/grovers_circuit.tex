@@ -6,8 +6,11 @@
 \begin{document} 
 \scalebox{1.0}{
 \Qcircuit @C=1.0em @R=0.2em @!R { \\
-	 	\nghost{ {q}_{0} :  } & \lstick{ {q}_{0} :  } & \gate{\mathrm{H}} & \ctrl{1} & \gate{\mathrm{H}} & \gate{\mathrm{Z}} & \ctrl{1} & \gate{\mathrm{H}} & \meter & \qw & \qw & \qw\\ 
-	 	\nghost{ {q}_{1} :  } & \lstick{ {q}_{1} :  } & \gate{\mathrm{H}} & \control\qw & \gate{\mathrm{H}} & \gate{\mathrm{Z}} & \control\qw & \gate{\mathrm{H}} & \qw & \meter & \qw & \qw\\ 
-	 	\nghost{c:} & \lstick{c:} & \lstick{/_{_{2}}} \cw & \cw & \cw & \cw & \cw & \cw & \dstick{_{_{0}}} \cw \cwx[-2] & \dstick{_{_{1}}} \cw \cwx[-1] & \cw & \cw\\ 
+	 	\nghost{ {q}_{0} :  } & \lstick{ {q}_{0} :  } & \gate{\mathrm{H}} & \ctrl{1} & \gate{\mathrm{H}} & \gate{\mathrm{Z}} & \ctrl{1} & \gate{\mathrm{H}} \barrier[0em]{3} & \qw & \meter & \qw & \qw & \qw & \qw & \qw\\ 
+	 	\nghost{ {q}_{1} :  } & \lstick{ {q}_{1} :  } & \gate{\mathrm{H}} & \control\qw & \gate{\mathrm{H}} & \gate{\mathrm{Z}} & \control\qw & \gate{\mathrm{H}} & \qw & \qw & \meter & \qw & \qw & \qw & \qw\\ 
+	 	\nghost{ {q}_{2} :  } & \lstick{ {q}_{2} :  } & \ctrl{1} & \gate{\mathrm{Delay}\,(\mathrm{0[dt]})} & \ctrl{1} & \gate{\mathrm{Delay}\,(\mathrm{0[dt]})} & \ctrl{1} & \gate{\mathrm{Delay}\,(\mathrm{0[dt]})} & \qw & \qw & \qw & \meter & \qw & \qw & \qw\\ 
+	 	\nghost{ {q}_{3} :  } & \lstick{ {q}_{3} :  } & \targ & \qw & \targ & \qw & \targ & \qw & \qw & \qw & \qw & \qw & \meter & \qw & \qw\\ 
+	 	\nghost{c:} & \lstick{c:} & \lstick{/_{_{2}}} \cw & \cw & \cw & \cw & \cw & \cw & \cw & \cw & \cw & \cw & \cw & \cw & \cw\\ 
+	 	\nghost{meas:} & \lstick{meas:} & \lstick{/_{_{4}}} \cw & \cw & \cw & \cw & \cw & \cw & \cw & \dstick{_{_{0}}} \cw \cwx[-5] & \dstick{_{_{1}}} \cw \cwx[-4] & \dstick{_{_{2}}} \cw \cwx[-3] & \dstick{_{_{3}}} \cw \cwx[-2] & \cw & \cw\\ 
 \\ }}
 \end{document}
