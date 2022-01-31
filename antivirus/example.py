@@ -1,5 +1,5 @@
 from qiskit import QuantumCircuit
-from isomorphism import histogram, pattern_counter, match
+from isomorphism import  match, pattern_counter, bar_graph
 from utils import get_bits_mapping
 
 
@@ -95,4 +95,4 @@ print()
 print("--------------------------------------------------------------------------------------------------")
 print("\n3. Pattern histogram\n")
 print("{Number of the pattern in a continuous appearance: count for this appearance}")
-print(histogram(qc, pt, matcher="networkx"))
+print(bar_graph(qc, pt, matcher="networkx"))

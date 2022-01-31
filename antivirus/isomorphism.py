@@ -93,12 +93,12 @@ def pattern_counter(
 
 
 
-def histogram(
+def bar_graph(
     qc: QuantumCircuit, 
     pt: QuantumCircuit,
     matcher : Optional[str] = "networkx"
     ) -> Dict[int, int]:
-    """Return the histogram of the number of appearances of the pattern in the quantum circuit.
+    """Return the bar graph of the number of appearances of the pattern in the quantum circuit.
 
     Args:
         qc: The quantum circuit to be searched through.
@@ -108,7 +108,8 @@ def histogram(
             ``retworkx.vf2_mapping`` is used.
     
     Returns:
-        The histogram of the number of appearances of the pattern in the quantum circuit.
+        The bar graph of the number of appearances of the pattern in the quantum circuit. Keys
+            are the number of patterns in serial, and values are counts for them.
     """
 
     if matcher == 'networkx':
