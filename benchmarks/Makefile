@@ -16,6 +16,7 @@ run:
 	python ga.py -m $(mal_type) -k $(copies)
 	python qnn.py -q $(qnn_type) -m $(mal_type) -k $(copies)
 	python vqe.py -v $(vqe_type) -m $(mal_type) -k $(copies)
+	python qnn_mnist4.py -q $(qnn_type) -m $(mal_type) -k $(copies)
 	
 clean:
 	rm -rf *.json
