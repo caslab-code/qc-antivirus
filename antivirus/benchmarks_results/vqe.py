@@ -1,99 +1,14 @@
-#initialization
-import matplotlib.pyplot as plt
-import numpy as np
-import argparse
+from qiskit import QuantumCircuit
+from malicious_circuit_gen import malicious_circuit_gen
 
-# importing Qiskit
-from qiskit import IBMQ, Aer, assemble, transpile
-from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
-from qiskit.providers.ibmq import least_busy
-
-# import basic plot tools
-from qiskit.visualization import plot_histogram
-
-#importing from Search Pattern
 import sys
-sys.path.append('../antivirus/previous_antivirus')
-import search_pattern
+sys.path.append('../')
+from pattern_matching import pattern_counter, bar_graph
 
-sys.path.append('../antivirus')
-from pattern_matching import match, pattern_counter, bar_graph
-from utils import get_bits_mapping
 
-def malicious_circuit_gen(copies, mal_type): # copies- decides the depth of the malicious circuit and mal_type decides which malicious circuit
-    
-    if (mal_type == 'M10'):
-        n = 4
-    
-    elif (mal_type == 'M9'):
-        n = 3
-    
-    elif (mal_type == 'M5' or mal_type == 'M6' or mal_type == 'M7' or mal_type == 'M8'  ):
-        n = 1     
-    
-    else:
-        n = 2
-    mal_circuit = QuantumCircuit(n)
-    
-############ MALICIOUS CIRCUIT #####################
-    for i in range(copies):
-        if (mal_type == 'M1'):
-            mal_circuit.cx(0,1)
-        
-        if (mal_type == 'M2'):
-            mal_circuit.cx(0,1)
-            mal_circuit.delay(0, qarg=0, unit = 'dt')
-        
-        if (mal_type == 'M3'):
-            mal_circuit.cx(0,1)
-            mal_circuit.cx(1,0)
-        
-        if (mal_type == 'M4'):
-            mal_circuit.cx(0,1)
-            mal_circuit.h(0)
-            mal_circuit.delay(0, qarg=0, unit = 'dt')
-            mal_circuit.h(0)
-        
-        if (mal_type == 'M5'):
-            mal_circuit.x(0)
-            mal_circuit.delay(0, qarg=0, unit = 'dt')
-        
-        if (mal_type == 'M6'):
-            mal_circuit.y(0)
-            mal_circuit.delay(0, qarg=0, unit = 'dt')
-        
-        if (mal_type == 'M7'):
-            mal_circuit.z(0)
-            mal_circuit.delay(0, qarg=0, unit = 'dt')
-        
-        if (mal_type == 'M8'):
-            mal_circuit.h(0)
-            mal_circuit.delay(0, qarg=0, unit = 'dt')
-        
-        if (mal_type == 'M9'):
-            mal_circuit.cx(0,1)
-            mal_circuit.cx(1,2)
-        
-        if (mal_type == 'M10'):
-            if i%2==1:
-                mal_circuit.cx(1,0)
-                mal_circuit.cx(2,1)
-                mal_circuit.cx(3,2)
-                mal_circuit.delay(0, qarg = 3)
-            else:
-                mal_circuit.cx(3,2)
-                mal_circuit.cx(2,1)
-                mal_circuit.cx(1,0)
-                mal_circuit.delay(0, qarg = 0)
-####################################################
 
-#     mal_circuit.barrier()
-    return mal_circuit
-
- 
-    
-def vqe_types(vqe_type):
-    # n = 4
+def vqe_circ(vqe_type, mal_type = None, copies = None, is_mal = False):
+    # n = 2
     vqe_circuit_short = """OPENQASM 2.0;
                         include "qelib1.inc";
                         qreg q[2];
@@ -114,7 +29,7 @@ def vqe_types(vqe_type):
                         cu3(1.322163,2.8048835,1.8160276) q[0],q[1];
                         cu3(-1.3734181,1.8135304,0.56211334) q[1],q[0];
                         """
-      
+    
     vqe_circuit_medium = """OPENQASM 2.0;
                             include "qelib1.inc";
                             qreg q[2];
@@ -203,7 +118,7 @@ def vqe_types(vqe_type):
                             u3(-1.2042544,-2.6077435,-3.1232479) q[1];
                             cu3(0.89884311,-0.68626165,1.2230947) q[0],q[1];
                             cu3(-2.5781903,2.3324101,-2.306098) q[1],q[0];
-                         """
+                        """
     
     if (vqe_type == "long"):
         vqe_circuit = vqe_circuit_long
@@ -211,78 +126,26 @@ def vqe_types(vqe_type):
         vqe_circuit = vqe_circuit_medium
     else:
         vqe_circuit = vqe_circuit_short
+
+    if is_mal:
+        victim_circ = QuantumCircuit.from_qasm_str(vqe_circuit)
+        malicious_circ = malicious_circuit_gen(mal_type, copies)
+        circuit = QuantumCircuit(malicious_circ.num_qubits + victim_circ.num_qubits)
+        circuit.barrier()
+        circuit.append(victim_circ, list(range(victim_circ.num_qubits)))
+        circuit.append(malicious_circ, list(range(victim_circ.num_qubits, victim_circ.num_qubits + malicious_circ.num_qubits)))
+        circuit = circuit.decompose()
+        circuit.barrier()
+        circuit.measure_all()
+    else:
+        circuit = QuantumCircuit.from_qasm_str(vqe_circuit)
+
+    return circuit
+
+
+
+def vqe_pattern_matching(vqe_type, mal_type, copies, is_mal):
+    qc = vqe_circ(vqe_type, mal_type, copies, is_mal)
+    pt = malicious_circuit_gen(mal_type, 1)
     
-    
-    vqe_circ = QuantumCircuit.from_qasm_str(vqe_circuit)
-    
-    return vqe_circ
-
-
-def vqe(vqe_type, mal_type ="M1", copies =1):
-    qc = vqe_types(vqe_type)
-    pt = malicious_circuit_gen(copies,mal_type)
-    print(qc)
-    print(pt)
-    
-    # print("--------------------------------------------------------")
-    # print("Grover's 2-Qubit Circuit \n") 
-    # print(qc)
-    
-    # print("Search Pattern:") 
-    # print(pt)
-    
-    # for matching in match(qc, pt):
-        # print(matching)
-
-    # 2. Pattern counter:
-          # Count how many patterns in the quantum circuit.
-    # print("--------------------------------------------------------")
-    # print("2. Pattern counter\n")
-    # print("The pattern count in the quantum circuit is: " + str(pattern_counter(qc, pt)))
-
-    print("--------------------------------------------------------------------------------------------------")
-    print("\n1. Output details of all matching\n")
-    for i, matching in enumerate(match(qc, pt)):
-        print("Matching " + str(i+1) + ":\n")
-        print("(a) Node mapping ({node in the quantum circuit: node in the pattern}):")
-        print(matching)
-        print("\n(b) Qubit and clbit index mapping:")
-        mapping = get_bits_mapping(matching)
-        print("Qubit index mapping is ({index in the quantum circuit: index in the pattern}): ")
-        print(mapping[0])
-        print("Clbit index mapping is ({index in the quantum circuit: index in the pattern}): ")
-        print(mapping[1])
-        print()
-        print()
-        print()
-
-    # 2. Pattern counter:
-    #       Count how many patterns in the quantum circuit.
-    
-    # print("--------------------------------------------------------------------------------------------------")
-    # print("\n2. Pattern counter\n")
-    # print("The appearances of the pattern in the quantum circuit is: " + str(pattern_counter(qc, pt, matcher="networkx")))
-    # print()
-
-    # 3. Pattern histogram:
-    #       Histogram of the pattern in the circuit.
-    #       The return value is a dict, whose keys are how many times the pattern appears in series
-    #       and values are the counts for them.
-    # print("--------------------------------------------------------------------------------------------------")
-    # print("\n3. Pattern histogram\n")
-    # print("{Number of the pattern in a continuous appearance: count for this appearance}")
-    # print(bar_graph(qc, pt, matcher="networkx"))
-    
-    return 
-
-    
-parser = argparse.ArgumentParser()
-parser.add_argument('-v','--vqe_type', type=str, required=True, help='VQE type type options short, medium, long')
-parser.add_argument('-m','--mal_type', type=str, required=True, help='Malicious Circuit type options M1 - M10')
-parser.add_argument('-k','--copies', type=int, required=True, help='Defines depth of the malicious circuit')
-
-
-args = parser.parse_args()
-vqe(args.vqe_type, args.mal_type, args.copies)
-
-# grover_2qbit()    
+    print("Malicious Circuit Type: " + mal_type + ". Pattern Count: " + str(pattern_counter(qc, pt)) + ". Bar graph: " + str(bar_graph(qc, pt)))

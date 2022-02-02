@@ -18,7 +18,7 @@ sys.path.append('../antivirus/previous_antivirus')
 import search_pattern
 
 sys.path.append('../antivirus')
-from isomorphism import pattern_counter, match 
+from pattern_matching import pattern_counter, match 
 
 
 def malicious_circuit_gen(copies, mal_type): # copies- decides the depth of the malicious circuit and mal_type decides which malicious circuit
