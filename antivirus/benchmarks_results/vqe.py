@@ -130,12 +130,13 @@ def vqe_circ(vqe_type, mal_type = None, copies = None, is_mal = False):
     if is_mal:
         victim_circ = QuantumCircuit.from_qasm_str(vqe_circuit)
         malicious_circ = malicious_circuit_gen(mal_type, copies)
-        num_qubits_vic = victim_circ.num_qubits
-        num_qubits_mal = malicious_circ.num_qubits
-        circuit = QuantumCircuit(num_qubits_mal + num_qubits_vic)
-        circuit.append(victim_circ, list(range(num_qubits_vic)))
-        circuit.append(malicious_circ, list(range(num_qubits_vic, num_qubits_vic + num_qubits_mal)))
+        circuit = QuantumCircuit(malicious_circ.num_qubits + victim_circ.num_qubits)
+        circuit.barrier()
+        circuit.append(victim_circ, list(range(victim_circ.num_qubits)))
+        circuit.append(malicious_circ, list(range(victim_circ.num_qubits, victim_circ.num_qubits + malicious_circ.num_qubits)))
         circuit = circuit.decompose()
+        circuit.barrier()
+        circuit.measure_all()
     else:
         circuit = QuantumCircuit.from_qasm_str(vqe_circuit)
 

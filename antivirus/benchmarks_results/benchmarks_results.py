@@ -1,7 +1,7 @@
 import argparse
-from grovers import ga
-from deutch_jozsa import dj
-from bernstein_vazarani import bv
+from grovers import ga_pattern_matching
+from deutch_jozsa import dj_pattern_matching
+from bernstein_vazarani import bv_pattern_matching
 from vqe import vqe_pattern_matching
 from qnn import qnn_pattern_matching
 
@@ -35,11 +35,11 @@ def benchmarks_results(benchmark, is_mal):
     for i in range(1, 11):
         mal_type = "M"+str(i)
         if benchmark == 'ga':
-            ga(mal_type, copies_for_mal_type(mal_type), is_mal)
+            ga_pattern_matching(mal_type, copies_for_mal_type(mal_type), is_mal)
         if benchmark == 'dj':
-            dj("balanced", 2, mal_type, copies_for_mal_type(mal_type), is_mal)
+            dj_pattern_matching("balanced", 2, mal_type, copies_for_mal_type(mal_type), is_mal)
         if benchmark == 'bv':
-            bv("01", 2, mal_type, copies_for_mal_type(mal_type), is_mal)   
+            bv_pattern_matching("01", 2, mal_type, copies_for_mal_type(mal_type), is_mal)   
         if benchmark == 'vqe':
             vqe_pattern_matching('long', mal_type, copies_for_mal_type(mal_type), is_mal)
         if benchmark == 'qnn':
