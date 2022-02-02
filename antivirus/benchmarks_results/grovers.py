@@ -45,6 +45,5 @@ def ga_circ(mal_type = None, copies = None, is_mal = False): # k- decides the de
 def ga_pattern_matching(mal_type, copies, is_mal):
     qc = ga_circ(mal_type, copies, is_mal)
     pt = malicious_circuit_gen(mal_type, 1)
-
-    print("Malicious Circuit Type: " + mal_type + ". Pattern Count: " + str(pattern_counter(qc, pt)) + ". Bar graph: " + str(bar_graph(qc, pt)))
     
+    print("Malicious Circuit Type: " + mal_type + ". Pattern Count: " + str(pattern_counter(qc, pt)) + ". Bar graph: " + str(bar_graph(qc, pt)))

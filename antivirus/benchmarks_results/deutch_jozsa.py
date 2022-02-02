@@ -50,7 +50,7 @@ def dj_oracle(case, n):
 
 
 
-def dj_circ(case, n, mal_type = None, copies = None, is_mal = False):
+def dj_circ(case, n,mal_type = None, copies = None, is_mal = False):
     dj_circuit = QuantumCircuit(3)
     # Set up the output qubit:
     dj_circuit.x(2)

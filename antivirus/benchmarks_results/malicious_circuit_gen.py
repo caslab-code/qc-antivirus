@@ -67,8 +67,4 @@ def malicious_circuit_gen(mal_type, copies): # copies- decides the depth of the 
                 mal_circuit.delay(0, qarg = 0)
     ####################################################
 
-    # mal_circuit.barrier()
-    # mal_circuit.measure_all()
-
     return mal_circuit
-
