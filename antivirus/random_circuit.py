@@ -107,7 +107,7 @@ def append_random_malicious_circuit(vic_circ, mal_list, mal_duration, vic_qubits
             for i in range(10):
                 circ.cx(0,1)
             mal_list = [malicious_circuit_gen(1, "M"+str(i)) for i in range(1, 5)]
-            malicious_circuit(circ, mal_list, 10000, list(range(2)), [3, 4], backend)
+            append_random_malicious_circuit(circ, mal_list, 10000, list(range(2)), [3, 4], backend)
     
     Note:
         1. Don't input transpiled vic_circ otherwise it would include ancilla qubits
@@ -143,7 +143,7 @@ def append_random_malicious_circuit(vic_circ, mal_list, mal_duration, vic_qubits
         mal_duration -= mal_durations_sorted[idx]
     
     # combine the victim circuit and malicious circuit
-    circ = QuantumCircuit(vic_circ.num_qubits + 2)
+    circ = QuantumCircuit(backend.configuration().n_qubits)
     circ.append(vic_circ, vic_qubits)
     circ.append(mal_circ, mal_qubits)
     circ = transpile(circ, backend, optimization_level = 0, scheduling_method=scheduling_method)
