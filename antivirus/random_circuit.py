@@ -80,7 +80,7 @@ def malicious_circuit_gen(copies, mal_type): # copies- decides the depth of the 
 
 
 
-def append_random_malicious_circuit(vic_circ, mal_list, mal_duration, vic_qubits, mal_qubits, backend, scheduling_method = None, random_seed = 0):
+def append_random_malicious_circuit(vic_circ, mal_list, mal_duration, vic_qubits, mal_qubits, backend, random_seed = 0, **transpiler_args):
     """Randomly generate the malicious circuits with an approximate duration and append them to the victim circuit.
 
     Args:
@@ -93,8 +93,8 @@ def append_random_malicious_circuit(vic_circ, mal_list, mal_duration, vic_qubits
         vic_qubits: Qubit indices to append the victim circuit.
         mal_qubits: Qubit indices to append the malicious circuit.
         backend: The backend used to compute the duration and tranpile the circuit.
-        scheduling_method: Same as `scheduling_method` in `transpile()` of Qiskit.
         random_Seed: Random seed.
+        transpiler_args: arguments for tranpile().
 
     Returns:
         The victim circuit appended with randomly generated malicious circuit.
@@ -131,6 +131,7 @@ def append_random_malicious_circuit(vic_circ, mal_list, mal_duration, vic_qubits
     # the total duration is less or equal to `mal_duration`, and adding any malicious
     # pattern in `mal_list` will make the total duration larger than `mal_duration`
     mal_circ = QuantumCircuit(2)
+    mal_duration_init = mal_duration
     while True:
         for i in range(len(mal_list)):
             if mal_durations_sorted[i] > mal_duration:
@@ -138,15 +139,16 @@ def append_random_malicious_circuit(vic_circ, mal_list, mal_duration, vic_qubits
         if i == 0:
             break
         idx = mal_ids_sorted[random.randint(0, i-1)]
-        mal_circ.append(mal_list[idx].to_instruction(), qr[0:2])
+        mal_circ.append(mal_list[idx].to_instruction(), [0, 1])
         mal_circ = mal_circ.decompose()
         mal_duration -= mal_durations_sorted[idx]
+    mal_duration = mal_duration_init - mal_duration
     
     # combine the victim circuit and malicious circuit
     circ = QuantumCircuit(backend.configuration().n_qubits)
     circ.append(vic_circ, vic_qubits)
     circ.append(mal_circ, mal_qubits)
-    circ = transpile(circ, backend, optimization_level = 0, scheduling_method=scheduling_method)
+    circ = transpile(circ, backend, **transpiler_args)
 
-    return circ.decompose()
+    return circ, mal_duration
 
