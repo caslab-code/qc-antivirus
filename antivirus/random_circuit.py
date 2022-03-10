@@ -117,7 +117,7 @@ def append_random_malicious_circuit(vic_circ, mal_list, mal_duration, vic_qubits
     # store the duration of each malicious type on the backend in unit 'dt'
     mal_durations = []
     for mal_circ in mal_list:
-        mal_sche = schedule(transpile(mal_circ, backend), backend)
+        mal_sche = schedule(transpile(mal_circ, backend, **transpiler_args), backend)
         mal_durations.append(mal_sche.duration)
     
     # sort the list based on durations
