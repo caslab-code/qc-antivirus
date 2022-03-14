@@ -114,6 +114,12 @@ def append_random_malicious_circuit(vic_circ, mal_list, mal_duration, vic_qubits
     """
     random.seed(random_seed)
 
+    if not mal_list:
+        circ = QuantumCircuit(backend.configuration().n_qubits)
+        circ.append(vic_circ, vic_qubits)
+        circ = transpile(circ, backend, **transpiler_args)
+        return circ, []
+
     # store the duration of each malicious type on the backend in unit 'dt'
     mal_durations = []
     for mal_circ in mal_list:
@@ -133,11 +139,13 @@ def append_random_malicious_circuit(vic_circ, mal_list, mal_duration, vic_qubits
     mal_circ = QuantumCircuit(2)
     mal_duration_init = mal_duration
     while True:
-        for i in range(len(mal_list)):
+        if mal_durations_sorted[0] > mal_duration:
+            break
+        i = 1
+        while i < len(mal_list):
             if mal_durations_sorted[i] > mal_duration:
                 break
-        if i == 0:
-            break
+            i += 1
         idx = mal_ids_sorted[random.randint(0, i-1)]
         mal_circ.append(mal_list[idx].to_instruction(), [0, 1])
         mal_circ = mal_circ.decompose()
