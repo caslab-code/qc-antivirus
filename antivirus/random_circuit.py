@@ -2,7 +2,6 @@ import random
 from qiskit import QuantumCircuit, transpile, schedule
 
 
-
 def malicious_circuit_gen(copies, mal_type): # copies- decides the depth of the malicious circuit and d is the delay value
     
     if (mal_type == 'M10'):
@@ -149,7 +148,7 @@ def append_random_malicious_circuit(vic_circ, mal_list, mal_duration, vic_qubits
         idx = mal_ids_sorted[random.randint(0, i-1)]
         mal_circ.append(mal_list[idx].to_instruction(), [0, 1])
         mal_circ = mal_circ.decompose()
-        mal_duration -= mal_durations_sorted[idx]
+        mal_duration -= mal_durations[idx]
     mal_duration = mal_duration_init - mal_duration
     
     # combine the victim circuit and malicious circuit
