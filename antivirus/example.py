@@ -1,6 +1,6 @@
 from qiskit import QuantumCircuit
 from pattern_matching import  match, pattern_counter, bar_graph
-from utils import get_bits_mapping
+from utils import get_bits_mapping, dump
 
 
 # ------------------------------------------------------------------------------------
@@ -81,12 +81,16 @@ for i, matching in enumerate(match(qc, pt)):
     print()
     print()
 
+
+
 # 2. Pattern counter:
 #       Count how many patterns in the quantum circuit.
 print("--------------------------------------------------------------------------------------------------")
 print("\n2. Pattern counter\n")
 print("The appearances of the pattern in the quantum circuit is: " + str(pattern_counter(qc, pt, matcher="networkx")))
 print()
+
+
 
 # 3. Pattern histogram:
 #       Histogram of the pattern in the circuit.
@@ -96,3 +100,11 @@ print("-------------------------------------------------------------------------
 print("\n3. Pattern histogram\n")
 print("{Number of the pattern in a continuous appearance: count for this appearance}")
 print(bar_graph(qc, pt, matcher="networkx"))
+
+
+
+# 4. Dump the results as a json file
+print("--------------------------------------------------------------------------------------------------")
+print("\n4. Dump the results as a json file\n")
+dump(qc, pt, "example_matching.json")
+print('Please find the file "example_matching.json"')

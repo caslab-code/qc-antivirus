@@ -13,6 +13,7 @@ from dagnc import DAGNC
 from circuit_to_dagnc import circuit_to_dagnc
 
 
+
 def circuit_to_network(
     qc: QuantumCircuit, 
     network_type : str = "networkx"
@@ -241,3 +242,41 @@ def count_num_bits(
                             clbit_set.append(clbit)
 
     return num_bits
+
+
+
+def dump(
+    qc: QuantumCircuit, 
+    pt: Union[QuantumCircuit, List[QuantumCircuit]],
+    filename: str
+    ):
+    """Dump the found pattern as a json file.
+
+    Args:
+        qc: The input to count qubits. 
+        pt: The pattern to be searched.
+        filename: The name of the json file
+
+    """
+
+    import json
+    from pattern_matching import  match, pattern_counter
+
+    file = {"Quantum Circuit": qc.qasm(), "Pattern": []}
+    if isinstance(pt, QuantumCircuit):
+        pt_matching = {"Pattern Circuit": pt.qasm(), "Count": pattern_counter(qc, pt, matcher="networkx"), "Matching":{}}
+        for i, matching in enumerate(match(qc, pt)):
+            mapping = get_bits_mapping(matching)
+            pt_matching["Matching"][i] = {"Qubit Mapping": mapping[0], "Clbit Mapping": mapping[1]}
+        file["Pattern"].append(pt_matching)
+    elif isinstance(pt, list) and isinstance(pt[0], QuantumCircuit):
+        for pattern in pt:
+            pt_matching = {"Pattern Circuit": pattern.qasm(), "Count": pattern_counter(qc, pattern, matcher="networkx"), "Matching":{}}
+            for i, matching in enumerate(match(qc, pattern)):
+                mapping = get_bits_mapping(matching)
+                pt_matching["Matching"][i] = {"Qubit Mapping": mapping[0], "Clbit Mapping": mapping[1]}
+            file["Pattern"].append(pt_matching)
+    else:
+        raise("Please input the right type for pattern (either QuantumCircuit or a list of QuantumCircuit)")
+    
+    json.dump(file, open(filename,'w'))

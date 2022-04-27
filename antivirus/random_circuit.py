@@ -112,7 +112,7 @@ def append_random_malicious_circuit(vic_circ, mal_list, mal_duration, vic_qubits
         1. Don't input transpiled vic_circ otherwise it would include ancilla qubits
     """
     random.seed(random_seed)
-
+    
     if not mal_list:
         circ = QuantumCircuit(backend.configuration().n_qubits)
         circ.append(vic_circ, vic_qubits)
@@ -147,10 +147,10 @@ def append_random_malicious_circuit(vic_circ, mal_list, mal_duration, vic_qubits
             i += 1
         idx = mal_ids_sorted[random.randint(0, i-1)]
         mal_circ.append(mal_list[idx].to_instruction(), [0, 1])
-        mal_circ = mal_circ.decompose()
+        # mal_circ = mal_circ.decompose()
         mal_duration -= mal_durations[idx]
     mal_duration = mal_duration_init - mal_duration
-    
+    mal_circ = mal_circ.decompose()
     # combine the victim circuit and malicious circuit
     circ = QuantumCircuit(backend.configuration().n_qubits)
     circ.append(vic_circ, vic_qubits)
@@ -158,4 +158,3 @@ def append_random_malicious_circuit(vic_circ, mal_list, mal_duration, vic_qubits
     circ = transpile(circ, backend, **transpiler_args)
 
     return circ, mal_duration
-
