@@ -1,4 +1,5 @@
 from qiskit import QuantumCircuit
+import qiskit
 from pattern_matching import  match, pattern_counter, bar_graph
 from utils import get_bits_mapping, dump
 

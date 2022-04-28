@@ -1,4 +1,6 @@
+from matplotlib.style import library
 from qiskit import QuantumCircuit
+import qiskit
 from qiskit.qobj import Qobj
 from qiskit.qobj.qasm_qobj import QasmQobj, QasmQobjInstruction
 from qiskit.dagcircuit.dagdepnode import DAGDepNode
@@ -248,6 +250,9 @@ def count_num_bits(
 def dump(
     qc: QuantumCircuit, 
     pt: Union[QuantumCircuit, List[QuantumCircuit]],
+    library: Union[str, List[str]] = "qelib1.inc",
+    backend: str = None,
+    transpiler_arguments: dict = None,
     filename: str = None
     ):
     """Dump the found pattern as a json file.
@@ -262,7 +267,12 @@ def dump(
     import json
     from pattern_matching import  match, pattern_counter
 
-    file = {"Quantum Circuit": qc.qasm(), "Pattern": []}
+    file = {"Quantum Circuit": qc.qasm(), 
+            "Pattern": [], 
+            "Qiskit Version": qiskit.__version__,
+            "Backend": backend,
+            "Library": library,
+            "Transpiler Arguments": transpiler_arguments}
     if isinstance(pt, QuantumCircuit):
         pt_matching = {"Pattern Circuit": pt.qasm(), "Count": pattern_counter(qc, pt, matcher="networkx"), "Matching":{}}
         for i, matching in enumerate(match(qc, pt)):
