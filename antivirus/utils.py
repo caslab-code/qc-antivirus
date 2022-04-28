@@ -248,7 +248,7 @@ def count_num_bits(
 def dump(
     qc: QuantumCircuit, 
     pt: Union[QuantumCircuit, List[QuantumCircuit]],
-    filename: str
+    filename: str = None
     ):
     """Dump the found pattern as a json file.
 
@@ -277,6 +277,12 @@ def dump(
                 pt_matching["Matching"][i] = {"Qubit Mapping": mapping[0], "Clbit Mapping": mapping[1]}
             file["Pattern"].append(pt_matching)
     else:
-        raise("Please input the right type for pattern (either QuantumCircuit or a list of QuantumCircuit)")
+        raise Exception("Please input the right type for pattern (either QuantumCircuit or a list of QuantumCircuit)")
     
-    json.dump(file, open(filename,'w'))
+    if not filename:
+        from datetime import datetime
+        filename = "pattern_matching_" + str(datetime.now()).replace('-','_').replace(' ','_').replace(':','_')[:19] + ".json"
+
+    with open(filename, 'w') as f:
+        json.dump(file, f, indent = 4)
+        print('Pattern matching information was successfully saved to "' + filename + '"')

@@ -106,5 +106,4 @@ print(bar_graph(qc, pt, matcher="networkx"))
 # 4. Dump the results as a json file
 print("--------------------------------------------------------------------------------------------------")
 print("\n4. Dump the results as a json file\n")
-dump(qc, pt, "example_matching.json")
-print('Please find the file "example_matching.json"')
+dump(qc, pt, filename="example_pattern_matching_information.json")
